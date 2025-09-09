@@ -113,6 +113,7 @@
         
         .form-group {
             margin-bottom: 12px;
+            position: relative;
         }
         
         .form-group label {
@@ -141,6 +142,14 @@
         .form-group textarea {
             height: 80px;
             resize: vertical;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            left: 10px;
+            top: 38px;
+            cursor: pointer;
+            color: #777;
         }
         
         .actions {
@@ -191,6 +200,15 @@
             background-color: #e67e22;
         }
         
+        .btn-danger {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
         .data-table-container {
             overflow-x: auto;
             border-radius: 8px;
@@ -221,6 +239,7 @@
             padding: 10px 12px;
             border-bottom: 1px solid #e0e0e0;
             font-size: 14px;
+            color: #444;
         }
         
         .data-table tr:nth-child(even) {
@@ -522,6 +541,105 @@
             font-size: 14px;
             line-height: 1.5;
         }
+        
+        /* تحسينات للشاشات الصغيرة */
+        @media (max-width: 480px) {
+            .header-content h1 {
+                font-size: 18px;
+            }
+            
+            .header-content p {
+                font-size: 12px;
+            }
+            
+            .section-title {
+                font-size: 18px;
+            }
+            
+            .form-group label, 
+            .form-group input, 
+            .form-group select, 
+            .form-group textarea {
+                font-size: 13px;
+            }
+            
+            .btn {
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+            
+            .stat-card {
+                min-width: 100px;
+                padding: 10px;
+            }
+            
+            .stat-number {
+                font-size: 16px;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+        
+        /* نمط مربع الحوار للتأكيد */
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .confirmation-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .confirmation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        /* فلتر التقرير الحالي */
+        .current-filter {
+            background-color: #e8f4fc;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .current-filter span {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .remove-filter {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -548,8 +666,8 @@
             </div>
             
             <div class="user-type">
-                <div class="user-type-btn active" id="btn-inspector" onclick="setUserType('inspector')">المتفقد</div>
-                <div class="user-type-btn" id="btn-admin" onclick="setUserType('admin')">المتفقد المنسق</div>
+                <div class="user-type-btn active" id="btn-inspector" onclick="setUserType('inspector')">متفقد</div>
+                <div class="user-type-btn" id="btn-admin" onclick="setUserType('admin')">متفقد منسق</div>
             </div>
             
             <div class="login-form">
@@ -572,6 +690,9 @@
                 <div class="form-group">
                     <label for="password">كلمة المرور</label>
                     <input type="password" id="password" placeholder="أدخل كلمة المرور">
+                    <span class="password-toggle" id="passwordToggle" onclick="togglePasswordVisibility()">
+                        <i class="fas fa-eye"></i>
+                    </span>
                 </div>
                 
                 <button class="btn btn-primary" onclick="login()">
@@ -618,7 +739,7 @@
         
         <div class="app-content" style="display: none;">
             <div class="form-section">
-                <h2 class="section-title">البطاقة التفقدية للمساجد</h2>
+                <h2 class="section-title">استمارة تفقدية للمساجد</h2>
                 
                 <div class="form-row">
                     <div class="form-group" style="flex: 1;">
@@ -634,14 +755,14 @@
                             <option value="فبراير">فبراير</option>
                             <option value="مارس">مارس</option>
                             <option value="أبريل">أبريل</option>
-                            <option value="مايو">مايو</option>
+                            <option value="مايو">ماي</option>
                             <option value="يونيو">يونيو</option>
                             <option value="يوليو">يوليوز</option>
                             <option value="أغسطس">غشت</option>
-                            <option value="سبتمبر">سبتمبر</option>
+                            <option value="سبتمبر">شتنبر</option>
                             <option value="أكتوبر">أكتوبر</option>
-                            <option value="نوفمبر">نوفمبر</option>
-                            <option value="ديسمبر">ديسمبر</option>
+                            <option value="نوفمبر">نونبر</option>
+                            <option value="ديسمبر">دجنبر</option>
                         </select>
                     </div>
                 </div>
@@ -767,12 +888,18 @@
                 
                 <div class="excel-status">
                     <i class="fas fa-sync-alt"></i>
-                    <span>يتم تحديث بيانات Excel تلقائياً مع كل تغيير</span>
+                    <span>يتم تحديث البيانات</span>
                 </div>
             </div>
             
             <div class="table-section">
                 <h2 class="section-title">التقارير المسجلة</h2>
+                
+                <!-- فلتر التقرير الحالي -->
+                <div id="currentFilterInfo" class="current-filter" style="display: none;">
+                    <span id="filterText">يتم عرض التقارير الخاصة بـ: </span>
+                    <button class="remove-filter" onclick="removeFilter()">إلغاء التصفية</button>
+                </div>
                 
                 <div class="filter-section">
                     <div class="filter-group">
@@ -800,14 +927,14 @@
                             <option value="فبراير">فبراير</option>
                             <option value="مارس">مارس</option>
                             <option value="أبريل">أبريل</option>
-                            <option value="مايو">مايو</option>
+                            <option value="مايو">ماي</option>
                             <option value="يونيو">يونيو</option>
                             <option value="يوليو">يوليوز</option>
                             <option value="أغسطس">غشت</option>
-                            <option value="سبتمبر">سبتمبر</option>
+                            <option value="سبتمبر">شتنبر</option>
                             <option value="أكتوبر">أكتوبر</option>
-                            <option value="نوفمبر">نوفمبر</option>
-                            <option value="ديسمبر">ديسمبر</option>
+                            <option value="نوفمبر">نونبر</option>
+                            <option value="ديسمبر">دجنبر</option>
                         </select>
                     </div>
                 </div>
@@ -842,7 +969,7 @@
                     <button class="btn btn-primary" onclick="refreshData()">
                         <i class="fas fa-sync-alt"></i> تحديث البيانات
                     </button>
-                    <button class="btn btn-warning" onclick="clearAllData()">
+                    <button class="btn btn-danger admin-only" id="clearAllBtn" onclick="showClearAllConfirmation()">
                         <i class="fas fa-trash"></i> مسح الكل
                     </button>
                     <!-- زر التحميل للمدير فقط -->
@@ -854,8 +981,20 @@
         </div>
         
         <footer style="display: none;">
-            <p>متفقدي مساجد مكناس 2023© - جميع الحقوق محفوظة | المندوبية الإقليمية للشؤون الإسلامية - مكناس</p>
+            <p>متفقدي مساجد مكناس 2025© - جميع الحقوق محفوظة | المندوبية الإقليمية للشؤون الإسلامية - مكناس</p>
         </footer>
+    </div>
+
+    <!-- مربع حوار التأكيد -->
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <h3 id="confirmationTitle">تأكيد الإجراء</h3>
+            <p id="confirmationMessage">هل أنت متأكد من أنك تريد تنفيذ هذا الإجراء؟</p>
+            <div class="confirmation-buttons">
+                <button class="btn btn-danger" id="confirmAction">نعم</button>
+                <button class="btn btn-primary" onclick="hideConfirmation()">إلغاء</button>
+            </div>
+        </div>
     </div>
 
     <div class="notification" id="main-notification">
@@ -865,7 +1004,7 @@
 
     <div class="sync-status" id="syncStatus">
         <i class="fas fa-check-circle"></i>
-        <span>مزامنة البيانات مكتملة</span>
+        <span>مفعَّل</span>
     </div>
 
     <script>
@@ -877,6 +1016,7 @@
         let currentUser = null;
         let userRole = null;
         let userType = 'inspector';
+        let autoFilterEnabled = true;
         
         // عناصر DOM
         const mainNotification = document.getElementById('main-notification');
@@ -887,9 +1027,17 @@
         const currentUserSpan = document.getElementById('currentUser');
         const userRoleSpan = document.getElementById('userRole');
         const excelDownloadBtn = document.getElementById('excelDownloadBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
         const statsSection = document.querySelector('.stats');
         const appContent = document.querySelector('.app-content');
         const footer = document.querySelector('footer');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmationTitle = document.getElementById('confirmationTitle');
+        const confirmationMessage = document.getElementById('confirmationMessage');
+        const confirmActionBtn = document.getElementById('confirmAction');
+        const passwordToggle = document.getElementById('passwordToggle');
+        const currentFilterInfo = document.getElementById('currentFilterInfo');
+        const filterText = document.getElementById('filterText');
         
         // تهيئة الصفحة
         document.addEventListener('DOMContentLoaded', function() {
@@ -916,6 +1064,57 @@
                 }
             });
         });
+        
+        // إظهار/إخفاء كلمة المرور
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = passwordToggle.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+        
+        // إظهار مربع حوار التأكيد
+        function showConfirmation(title, message, callback) {
+            confirmationTitle.textContent = title;
+            confirmationMessage.textContent = message;
+            confirmationModal.style.display = 'flex';
+            
+            // إزالة أي معالج حدث سابق وإضافة المعالج الجديد
+            confirmActionBtn.onclick = function() {
+                callback();
+                hideConfirmation();
+            };
+        }
+        
+        // إخفاء مربع حوار التأكيد
+        function hideConfirmation() {
+            confirmationModal.style.display = 'none';
+        }
+        
+        // تأكيد مسح جميع البيانات
+        function showClearAllConfirmation() {
+            showConfirmation(
+                "مسح جميع البيانات", 
+                "هل أنت متأكد من أنك تريد مسح جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.", 
+                clearAllData
+            );
+        }
+        
+        // إزالة التصفية التلقائية
+        function removeFilter() {
+            autoFilterEnabled = false;
+            currentFilterInfo.style.display = 'none';
+            currentFilter = '';
+            loadReports();
+        }
         
         // تحديد نوع المستخدم
         function setUserType(type) {
@@ -1009,23 +1208,29 @@
         
         // تسجيل الخروج
         function logout() {
-            currentUser = null;
-            userRole = null;
-            sessionStorage.removeItem('currentUser');
-            sessionStorage.removeItem('userRole');
-            
-            loginSection.style.display = 'block';
-            userInfo.style.display = 'none';
-            statsSection.style.display = 'none';
-            appContent.style.display = 'none';
-            footer.style.display = 'none';
-            
-            // إعادة تعيين حقول تسجيل الدخول
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            setUserType('inspector');
-            
-            showNotification('تم تسجيل الخروج بنجاح');
+            showConfirmation(
+                "تسجيل الخروج", 
+                "هل أنت متأكد من أنك تريد تسجيل الخروج؟", 
+                function() {
+                    currentUser = null;
+                    userRole = null;
+                    sessionStorage.removeItem('currentUser');
+                    sessionStorage.removeItem('userRole');
+                    
+                    loginSection.style.display = 'block';
+                    userInfo.style.display = 'none';
+                    statsSection.style.display = 'none';
+                    appContent.style.display = 'none';
+                    footer.style.display = 'none';
+                    
+                    // إعادة تعيين حقول تسجيل الدخول
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                    setUserType('inspector');
+                    
+                    showNotification('تم تسجيل الخروج بنجاح');
+                }
+            );
         }
         
         // عرض المحتوى الرئيسي بعد تسجيل الدخول
@@ -1039,11 +1244,34 @@
             currentUserSpan.textContent = currentUser;
             userRoleSpan.textContent = `(${userRole === 'admin' ? 'مدير' : 'متفقد'})`;
             
-            // التحقق إذا كان المستخدم هو المدير لإظهار زر التحميل
+            // التحقق إذا كان المستخدم هو المدير لإظهار أزرار المدير
             if (userRole === 'admin') {
                 excelDownloadBtn.classList.add('admin-visible');
+                clearAllBtn.classList.add('admin-visible');
+                autoFilterEnabled = false; // المدير يرى كل التقارير
+                currentFilterInfo.style.display = 'none';
             } else {
                 excelDownloadBtn.classList.remove('admin-visible');
+                clearAllBtn.classList.remove('admin-visible');
+                autoFilterEnabled = true; // المتفقد يرى تقاريره فقط
+                
+                // عرض معلومات التصفية التلقائية
+                currentFilterInfo.style.display = 'flex';
+                filterText.textContent = `يتم عرض التقارير الخاصة بـ: ${currentUser}`;
+            }
+            
+            // تطبيق التصفية التلقائية إذا لزم الأمر
+            applyAutoFilter();
+        }
+        
+        // تطبيق التصفية التلقائية بناءً على المستخدم
+        function applyAutoFilter() {
+            if (autoFilterEnabled && currentUser) {
+                currentFilter = currentUser;
+                loadReports();
+            } else {
+                currentFilter = '';
+                loadReports();
             }
         }
         
@@ -1209,11 +1437,25 @@
                 <td>${attachmentHtml}</td>
                 <td class="action-cell">
                     <button class="action-btn edit-btn" onclick="editReport(${report.id})"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn delete-btn" onclick="deleteReport(${report.id})"><i class="fas fa-trash"></i></button>
+                    <button class="action-btn delete-btn" onclick="confirmDeleteReport(${report.id})"><i class="fas fa-trash"></i></button>
                 </td>
             `;
             
             table.appendChild(row);
+        }
+        
+        // تأكيد حذف تقرير
+        function confirmDeleteReport(id) {
+            const report = reports.find(r => r.id === id);
+            if (!report) return;
+            
+            showConfirmation(
+                "حذف التقرير", 
+                `هل أنت متأكد من أنك تريد حذف التقرير رقم ${report.number} الخاص بمسجد ${report.mosqueName}؟`, 
+                function() {
+                    deleteReport(id);
+                }
+            );
         }
         
         // تحميل بيانات Excel من localStorage
@@ -1353,7 +1595,7 @@
             const url = URL.createObjectURL(excelBlob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `تقارير_زيارات_المساجد_${new Date().toLocaleDateString('ar-EG')}.xlsx`;
+            a.download = `تقارير_الزيارات_التفقدية_لشهر_${new Date().toLocaleDateString('fr-EG')}.xlsx`;
             document.body.appendChild(a);
             a.click();
             
@@ -1370,6 +1612,8 @@
         function filterByInspector() {
             const inspector = document.getElementById('filter-inspector').value;
             currentFilter = inspector;
+            autoFilterEnabled = false;
+            currentFilterInfo.style.display = 'none';
             loadReports();
         }
         
@@ -1384,14 +1628,22 @@
                 return;
             }
             
-            const filteredReports = reports.filter(report => report.month === month);
+            let reportsToShow = reports;
             
-            if (filteredReports.length === 0) {
+            // تطبيق التصفية الحالية إذا كانت موجودة
+            if (currentFilter) {
+                reportsToShow = reports.filter(report => report.inspector === currentFilter);
+            }
+            
+            // تطبيق تصفية الشهر
+            reportsToShow = reportsToShow.filter(report => report.month === month);
+            
+            if (reportsToShow.length === 0) {
                 table.innerHTML = '<tr><td colspan="14" style="text-align: center;">لا توجد تقارير لهذا الشهر</td></tr>';
                 return;
             }
             
-            filteredReports.forEach(report => {
+            reportsToShow.forEach(report => {
                 addReportToTable(report);
             });
         }
@@ -1432,37 +1684,33 @@
         
         // مسح جميع البيانات
         function clearAllData() {
-            if (confirm('هل أنت متأكد من أنك تريد مسح جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.')) {
-                reports = [];
-                saveReports();
-                loadReports();
-                updateStats();
-                initExcelData();
-                updateExcelFile();
-                showNotification('تم مسح جميع البيانات');
-            }
+            reports = [];
+            saveReports();
+            loadReports();
+            updateStats();
+            initExcelData();
+            updateExcelFile();
+            showNotification('تم مسح جميع البيانات');
         }
         
         // حذف تقرير
         function deleteReport(id) {
-            if (confirm('هل أنت متأكد من أنك تريد حذف هذا التقرير?')) {
-                const reportToDelete = reports.find(report => report.id === id);
-                reports = reports.filter(report => report.id !== id);
-                saveReports();
-                loadReports();
-                updateStats();
-                
-                // حذف التقرير من بيانات Excel
-                if (reportToDelete && excelData[reportToDelete.inspector]) {
-                    excelData[reportToDelete.inspector] = excelData[reportToDelete.inspector].filter(
-                        item => item['ر.ت'] !== reportToDelete.number
-                    );
-                    saveExcelData();
-                    updateExcelFile();
-                }
-                
-                showNotification('تم حذف التقرير');
+            const reportToDelete = reports.find(report => report.id === id);
+            reports = reports.filter(report => report.id !== id);
+            saveReports();
+            loadReports();
+            updateStats();
+            
+            // حذف التقرير من بيانات Excel
+            if (reportToDelete && excelData[reportToDelete.inspector]) {
+                excelData[reportToDelete.inspector] = excelData[reportToDelete.inspector].filter(
+                    item => item['ر.ت'] !== reportToDelete.number
+                );
+                saveExcelData();
+                updateExcelFile();
             }
+            
+            showNotification('تم حذف التقرير');
         }
         
         // تعديل تقرير
