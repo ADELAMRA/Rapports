@@ -124,6 +124,11 @@
             font-size: 14px;
         }
         
+        .form-group.required label::after {
+            content: " *";
+            color: var(--accent-color);
+        }
+        
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 10px 12px;
@@ -640,9 +645,92 @@
             cursor: pointer;
             font-size: 12px;
         }
+        
+        /* تحسينات جديدة */
+        .form-error {
+            color: var(--accent-color);
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .form-group.error input, 
+        .form-group.error select, 
+        .form-group.error textarea {
+            border-color: var(--accent-color);
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .mobile-optimized {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (max-width: 767px) {
+            .mobile-optimized .form-row {
+                flex-direction: column;
+            }
+            
+            .mobile-optimized .actions {
+                flex-direction: column;
+            }
+            
+            .mobile-optimized .filter-section {
+                flex-direction: column;
+            }
+        }
+        
+        /* مؤشر التحديث التلقائي */
+        .live-update-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--success-color);
+            margin-left: 10px;
+        }
+        
+        .live-update-indicator .pulse {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
     </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    
     <div class="container">
         <header>
             <div class="logo-container">
@@ -650,7 +738,7 @@
                     <i class="fas fa-mosque"></i>
                 </div>
                 <div class="header-content">
-                    <h1>تقارير الزيارات التفقدية للمساجد</h1>
+                    <h1>تقارير الزيارات التفقدية للمساجد <span class="live-update-indicator" id="liveUpdateIndicator" style="display: none;"><span class="pulse"></span> متصل</span></h1>
                     <p>المندوبية الإقليمية للشؤون الإسلامية - مكناس</p>
                 </div>
             </div>
@@ -671,7 +759,7 @@
             </div>
             
             <div class="login-form">
-                <div class="form-group">
+                <div class="form-group required">
                     <label for="username" id="username-label">اسم المتفقد</label>
                     <select id="username" class="form-control">
                         <option value="">اختر اسم المتفقد</option>
@@ -687,7 +775,7 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group required">
                     <label for="password">كلمة المرور</label>
                     <input type="password" id="password" placeholder="أدخل كلمة المرور">
                     <span class="password-toggle" id="passwordToggle" onclick="togglePasswordVisibility()">
@@ -703,6 +791,7 @@
             <div class="admin-info" id="admin-info">
                 <h3>بيانات الدخول للمتفقد المنسق</h3>
                 <p>اسم المستخدم: العمراوي نورالدين</p>
+                <p>كلمة المرور: admin2023</p>
             </div>
         </div>
 
@@ -737,17 +826,18 @@
             </div>
         </div>
         
-        <div class="app-content" style="display: none;">
+        <div class="app-content mobile-optimized" style="display: none;">
             <div class="form-section">
                 <h2 class="section-title">استمارة تفقدية للمساجد</h2>
                 
                 <div class="form-row">
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group required" style="flex: 1;">
                         <label for="number">الرقم الترتيبي:</label>
                         <input type="text" id="number" required>
+                        <div class="form-error" id="number-error">يرجى إدخال الرقم الترتيبي</div>
                     </div>
                     
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group required" style="flex: 1;">
                         <label for="month">الشهر:</label>
                         <select id="month" required>
                             <option value="">اختر الشهر</option>
@@ -764,6 +854,7 @@
                             <option value="نوفمبر">نونبر</option>
                             <option value="ديسمبر">دجنبر</option>
                         </select>
+                        <div class="form-error" id="month-error">يرجى اختيار الشهر</div>
                     </div>
                 </div>
                 
@@ -773,7 +864,7 @@
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group required" style="flex: 1;">
                         <label for="inspector">اسم المتفقد:</label>
                         <select id="inspector" required>
                             <option value="">اختر اسم المتفقد</option>
@@ -782,15 +873,16 @@
                             <option value="شهراوي محمد">شهراوي محمد</option>
                             <option value="بنعكي محمد">بنعكي محمد</option>
                             <option value="غزلان فؤاد">غزلان فؤاد</option>
-                            <option value="ناصفي فؤاد">ناصفي فؤاد</option>
+                            <option value="فؤاد">ناصفي فؤاد</option>
                             <option value="راجعي خالد">راجعي خالد</option>
                             <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
                             <option value="اليوسفي ياسين">اليوسفي ياسين</option>
                             <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
                         </select>
+                        <div class="form-error" id="inspector-error">يرجى اختيار اسم المتفقد</div>
                     </div>
                     
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group required" style="flex: 1;">
                         <label for="employee-id">ر.ب.و.ت:</label>
                         <select id="employee-id" required>
                             <option value="">اختر رقم البطاقة الوطنية</option>
@@ -805,23 +897,26 @@
                             <option value="D559129">D559129</option>
                             <option value="D490452">D490452</option>
                         </select>
+                        <div class="form-error" id="employee-id-error">يرجى اختيار رقم البطاقة الوطنية</div>
                     </div>
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group required" style="flex: 1;">
                         <label for="mosque-name">اسم المسجد المعني بالزيارة:</label>
                         <input type="text" id="mosque-name" required placeholder="أدخل اسم المسجد">
+                        <div class="form-error" id="mosque-name-error">يرجى إدخال اسم المسجد</div>
                     </div>
                     
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group required" style="flex: 1;">
                         <label for="info-code">رمزه المعلوماتي:</label>
                         <input type="text" id="info-code" required placeholder="أدخل الرمز المعلوماتي">
+                        <div class="form-error" id="info-code-error">يرجى إدخال الرمز المعلوماتي</div>
                     </div>
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group required" style="flex: 1;">
                         <label for="community">اسم الجماعة:</label>
                         <select id="community" required>
                             <option value="">اختر الجماعة</option>
@@ -833,7 +928,7 @@
                             <option value="واد الجديدة">واد الجديدة</option>
                             <option value="المهاية">المهاية</option>
                             <option value="واد الرمان">واد الرمان</option>
-                            <option value="سيدي عبد الله الخياط">سيدي عبد الله الخياط</option>
+                            <option value="سيدي عبد الله الخياط">سidi عبد الله الخياط</option>
                             <option value="عين عرمة">عين عرمة</option>
                             <option value="وليلي">وليلي</option>
                             <option value="عين كرمة">عين كرمة</option>
@@ -842,29 +937,33 @@
                             <option value="شرقاوة">شرقاوة</option>
                             <option value="دار ام السلطان">دار ام السلطان</option>
                             <option value="الدخيسة">الدخيسة</option>
-                            <option value="سيدي سليمان مول الكيفان">سيدي سليمان مول الكيفان</option>
+                            <option value="سيدي سليمان مول الكيفان">سidi سليمان مول الكيفان</option>
                             <option value="المغاصيين">المغاصيين</option>
                             <option value="نزالة بن عمار">نزالة بن عمار</option>
                             <option value="مولاي ادريس زرهون">مولاي ادريس زرهون</option>
                             <option value="بوفكران">بوفكران</option>
                             <option value="تولال">تولال</option>
                         </select>
+                        <div class="form-error" id="community-error">يرجى اختيار اسم الجماعة</div>
                     </div>
                     
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group required" style="flex: 1;">
                         <label for="visit-date">تاريخ الزيارة التفقدية:</label>
                         <input type="date" id="visit-date" required>
+                        <div class="form-error" id="visit-date-error">يرجى اختيار تاريخ الزيارة</div>
                     </div>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group required">
                     <label for="visit-topic">المهمة أو المهام موضوع الزيارة:</label>
                     <textarea id="visit-topic" required placeholder="أدخل موضوع الزيارة"></textarea>
+                    <div class="form-error" id="visit-topic-error">يرجى إدخال موضوع الزيارة</div>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group required">
                     <label for="notes">الملاحظات المسجلة:</label>
                     <textarea id="notes" required placeholder="أدخل الملاحظات"></textarea>
+                    <div class="form-error" id="notes-error">يرجى إدخال الملاحظات</div>
                 </div>
                 
                 <div class="form-group">
@@ -878,7 +977,7 @@
                 </div>
                 
                 <div class="actions">
-                    <button class="btn btn-success" onclick="submitForm()">
+                    <button class="btn btn-success" onclick="validateAndSubmitForm()">
                         <i class="fas fa-plus-circle"></i> إضافة التقرير
                     </button>
                     <button class="btn btn-warning" onclick="clearForm()">
@@ -901,7 +1000,7 @@
                     <button class="remove-filter" onclick="removeFilter()">إلغاء التصفية</button>
                 </div>
                 
-                <div class="filter-section">
+                <div class="filter-section mobile-optimized">
                     <div class="filter-group">
                         <label for="filter-inspector">تصفية حسب المتفقد:</label>
                         <select id="filter-inspector" onchange="filterByInspector()">
@@ -965,7 +1064,7 @@
                     </table>
                 </div>
                 
-                <div class="actions" style="margin-top: 15px;">
+                <div class="actions mobile-optimized" style="margin-top: 15px;">
                     <button class="btn btn-primary" onclick="refreshData()">
                         <i class="fas fa-sync-alt"></i> تحديث البيانات
                     </button>
@@ -1017,6 +1116,9 @@
         let userRole = null;
         let userType = 'inspector';
         let autoFilterEnabled = true;
+        let formChanged = false;
+        let lastUpdateTime = localStorage.getItem('lastUpdateTime') || 0;
+        let syncInterval = null;
         
         // عناصر DOM
         const mainNotification = document.getElementById('main-notification');
@@ -1038,6 +1140,8 @@
         const passwordToggle = document.getElementById('passwordToggle');
         const currentFilterInfo = document.getElementById('currentFilterInfo');
         const filterText = document.getElementById('filterText');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const liveUpdateIndicator = document.getElementById('liveUpdateIndicator');
         
         // تهيئة الصفحة
         document.addEventListener('DOMContentLoaded', function() {
@@ -1063,7 +1167,76 @@
                     login();
                 }
             });
+            
+            // تتبع تغييرات النموذج
+            trackFormChanges();
+            
+            // التحذير عند محاولة إغلاق الصفحة مع وجود تغييرات غير محفوظة
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged) {
+                    e.preventDefault();
+                    e.returnValue = 'لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ؟';
+                }
+            });
+            
+            // بدء المزامنة التلقائية
+            startAutoSync();
         });
+        
+        // بدء المزامنة التلقائية
+        function startAutoSync() {
+            // التحقق من التحديثات كل 3 ثواني
+            syncInterval = setInterval(checkForUpdates, 3000);
+        }
+        
+        // إيقاف المزامنة التلقائية
+        function stopAutoSync() {
+            if (syncInterval) {
+                clearInterval(syncInterval);
+                syncInterval = null;
+                liveUpdateIndicator.style.display = 'none';
+            }
+        }
+        
+        // التحقق من وجود تحديثات جديدة
+        function checkForUpdates() {
+            const storedUpdateTime = localStorage.getItem('lastUpdateTime') || 0;
+            
+            if (storedUpdateTime > lastUpdateTime) {
+                // هناك تحديثات جديدة
+                lastUpdateTime = storedUpdateTime;
+                loadReports();
+                updateStats();
+                updateExcelFile();
+                
+                if (userRole === 'admin') {
+                    showNotification('تم تحديث البيانات تلقائياً', false);
+                }
+            }
+            
+            // تحديث مؤشر المزامنة الحية
+            liveUpdateIndicator.style.display = 'inline-flex';
+        }
+        
+        // تحديث وقت التعديل الأخير
+        function updateLastModifiedTime() {
+            const now = new Date().getTime();
+            lastUpdateTime = now;
+            localStorage.setItem('lastUpdateTime', now);
+        }
+        
+        // تتبع تغييرات النموذج
+        function trackFormChanges() {
+            const formInputs = document.querySelectorAll('input, select, textarea');
+            formInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    formChanged = true;
+                });
+                input.addEventListener('change', function() {
+                    formChanged = true;
+                });
+            });
+        }
         
         // إظهار/إخفاء كلمة المرور
         function togglePasswordVisibility() {
@@ -1079,6 +1252,16 @@
                 eyeIcon.classList.remove('fa-eye-slash');
                 eyeIcon.classList.add('fa-eye');
             }
+        }
+        
+        // إظهار مؤشر التحميل
+        function showLoading() {
+            loadingOverlay.style.display = 'flex';
+        }
+        
+        // إخفاء مؤشر التحميل
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
         }
         
         // إظهار مربع حوار التأكيد
@@ -1228,6 +1411,9 @@
                     document.getElementById('password').value = '';
                     setUserType('inspector');
                     
+                    // إيقاف المزامنة التلقائية
+                    stopAutoSync();
+                    
                     showNotification('تم تسجيل الخروج بنجاح');
                 }
             );
@@ -1262,6 +1448,9 @@
             
             // تطبيق التصفية التلقائية إذا لزم الأمر
             applyAutoFilter();
+            
+            // بدء المزامنة التلقائية
+            startAutoSync();
         }
         
         // تطبيق التصفية التلقائية بناءً على المستخدم
@@ -1309,6 +1498,52 @@
             }
         }
         
+        // التحقق من صحة النموذج
+        function validateForm() {
+            let isValid = true;
+            
+            // إخفاء جميع رسائل الخطأ
+            document.querySelectorAll('.form-error').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            document.querySelectorAll('.form-group').forEach(el => {
+                el.classList.remove('error');
+            });
+            
+            // التحقق من الحقول الإلزامية
+            const requiredFields = [
+                'number', 'month', 'inspector', 'employee-id', 
+                'mosque-name', 'info-code', 'community', 'visit-date',
+                'visit-topic', 'notes'
+            ];
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (!element.value.trim()) {
+                    isValid = false;
+                    element.closest('.form-group').classList.add('error');
+                    document.getElementById(`${field}-error`).style.display = 'block';
+                }
+            });
+            
+            return isValid;
+        }
+        
+        // التحقق من صحة النموذج ثم الإرسال
+        function validateAndSubmitForm() {
+            if (validateForm()) {
+                submitForm();
+            } else {
+                showNotification('يرجى ملء جميع الحقول الإلزامية', true);
+                // التمرير إلى أول حقل به خطأ
+                const firstError = document.querySelector('.form-group.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+        
         // إرسال النموذج
         function submitForm() {
             // التحقق من تسجيل الدخول أولاً
@@ -1330,11 +1565,6 @@
             const notes = document.getElementById('notes').value;
             const actions = document.getElementById('actions').value;
             const attachments = document.getElementById('attachments').value;
-            
-            if (!number || !month || !inspector || !employeeId || !mosqueName || !infoCode || !community || !visitDate || !visitTopic || !notes) {
-                showNotification('يرجى ملء جميع الحقول الإلزامية', true);
-                return;
-            }
             
             const newReport = {
                 id: Date.now(),
@@ -1364,7 +1594,13 @@
             // تحديث ملف Excel تلقائياً
             updateExcelFile();
             
+            // تحديث وقت التعديل الأخير للمزامنة
+            updateLastModifiedTime();
+            
             showNotification('تم إضافة التقرير بنجاح!');
+            
+            // إعادة تعيين حالة التغييرات
+            formChanged = false;
         }
         
         // حفظ التقارير في localStorage
@@ -1376,6 +1612,9 @@
         function loadReports() {
             const table = document.getElementById('reportsTable');
             table.innerHTML = '';
+            
+            // تحميل البيانات من localStorage في كل مرة للتأكد من أحدث البيانات
+            reports = JSON.parse(localStorage.getItem('mosqueReports')) || [];
             
             if (reports.length === 0) {
                 table.innerHTML = '<tr><td colspan="14" style="text-align: center;">لا توجد تقارير مسجلة</td></tr>';
@@ -1673,6 +1912,18 @@
             document.getElementById('actions').value = '';
             document.getElementById('attachments').value = '';
             setCurrentDate();
+            
+            // إخفاء رسائل الخطأ
+            document.querySelectorAll('.form-error').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            document.querySelectorAll('.form-group').forEach(el => {
+                el.classList.remove('error');
+            });
+            
+            // إعادة تعيين حالة التغييرات
+            formChanged = false;
         }
         
         // تحديث البيانات
@@ -1690,6 +1941,10 @@
             updateStats();
             initExcelData();
             updateExcelFile();
+            
+            // تحديث وقت التعديل الأخير للمزامنة
+            updateLastModifiedTime();
+            
             showNotification('تم مسح جميع البيانات');
         }
         
@@ -1709,6 +1964,9 @@
                 saveExcelData();
                 updateExcelFile();
             }
+            
+            // تحديث وقت التعديل الأخير للمزامنة
+            updateLastModifiedTime();
             
             showNotification('تم حذف التقرير');
         }
@@ -1748,6 +2006,12 @@
             }
             
             showNotification('يمكنك الآن تعديل التقرير');
+            
+            // تعيين حالة التغييرات
+            formChanged = true;
+            
+            // تحديث وقت التعديل الأخير للمزامنة
+            updateLastModifiedTime();
         }
     </script>
 </body>
