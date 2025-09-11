@@ -2088,11 +2088,18 @@
         function refreshData() {
             updateSyncStatus('syncing');
             
+            // فرض إعادة تحميل البيانات من التخزين المشترك
+            const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
+            reports = [...sharedReports];
+            localStorage.setItem('mosqueReports', JSON.stringify(reports));
+            
+            console.log('تم إعادة تحميل البيانات:', reports.length, 'تقارير');
+            
             setTimeout(() => {
                 loadReports();
                 updateStats();
                 updateSyncStatus('connected');
-                showNotification('تم تحديث البيانات');
+                showNotification(`تم تحديث البيانات - عدد التقارير: ${reports.length}`);
             }, 1000);
         }
         
