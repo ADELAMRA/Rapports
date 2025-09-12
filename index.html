@@ -3,9 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تقارير الزيارات التفقدية للمساجد - مع المزامنة الفورية</title>
+    <title>نظام تقارير الزيارات التفقدية للمساجد - مزامنة حقيقية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, remove, update, serverTimestamp, onDisconnect, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+        
+        // إعدادات Firebase - من مشروعك
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkOqA77c4Gg1kfWNjhGryvv04R5zhMuUM",
+            authDomain: "mosque-reports-2025.firebaseapp.com",
+            databaseURL: "https://mosque-reports-2025-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "mosque-reports-2025",
+            storageBucket: "mosque-reports-2025.firebasestorage.app",
+            messagingSenderId: "955065452689",
+            appId: "1:955065452689:web:ba0be6c065ebab222f9730",
+            measurementId: "G-DC891V2XPV"
+        };
+
+        // تهيئة Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
+        
+        // تصدير للاستخدام العام
+        window.firebase = {
+            database,
+            auth,
+            ref,
+            push,
+            onValue,
+            remove,
+            update,
+            serverTimestamp,
+            onDisconnect,
+            set,
+            signInAnonymously,
+            onAuthStateChanged,
+            getAnalytics
+        };
+    </script>
+
     <style>
         :root {
             --primary-color: #1a5f7a;
@@ -17,6 +61,7 @@
             --warning-color: #f39c12;
             --table-header: #3498db;
             --sync-color: #00d4aa;
+            --firebase-color: #ff6f00;
         }
         
         * {
@@ -366,7 +411,7 @@
             gap: 8px;
             transform: translateX(100%);
             transition: transform 0.3s ease;
-            max-width: 300px;
+            max-width: 350px;
         }
         
         .notification.show {
@@ -377,8 +422,8 @@
             background-color: var(--accent-color);
         }
         
-        .notification.sync {
-            background-color: var(--sync-color);
+        .notification.firebase {
+            background-color: var(--firebase-color);
         }
         
         .filter-section {
@@ -456,10 +501,6 @@
             color: white;
         }
         
-        .user-type-btn:first-child {
-            border-left: 1px solid #ddd;
-        }
-        
         .admin-info {
             background-color: #f4f9fb;
             padding: 15px;
@@ -481,41 +522,57 @@
             line-height: 1.5;
         }
         
-        /* حالة المزامنة المحسنة */
-        .sync-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--sync-color);
-            color: white;
-            padding: 12px 18px;
-            border-radius: 25px;
+        /* حالة الاتصال بـ Firebase */
+        .firebase-status {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .connection-info {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(0,212,170,0.3);
-            z-index: 1000;
-            transition: all 0.3s ease;
         }
         
-        .sync-status.connecting {
+        .connection-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+        }
+        
+        .connection-dot.connecting {
             background-color: var(--warning-color);
-            box-shadow: 0 4px 15px rgba(243,156,18,0.3);
+            animation: pulse 1.5s infinite;
         }
         
-        .sync-status.disconnected {
+        .connection-dot.disconnected {
             background-color: var(--accent-color);
-            box-shadow: 0 4px 15px rgba(231,76,60,0.3);
         }
         
-        .sync-status.syncing i {
-            animation: spin 1.5s linear infinite;
+        .firebase-controls {
+            display: flex;
+            gap: 10px;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .firebase-btn {
+            background-color: var(--firebase-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        
+        .firebase-btn.disabled {
+            background-color: #95a5a6;
         }
         
         /* مؤشر المستخدمين المتصلين */
@@ -557,25 +614,17 @@
             background-color: var(--success-color);
         }
         
-        .user-status.idle {
-            background-color: var(--warning-color);
-        }
-        
-        .user-status.offline {
-            background-color: #95a5a6;
-        }
-        
         /* مؤشر النشاط الفورية */
         .activity-indicator {
             position: fixed;
             top: 130px;
             right: 20px;
-            background-color: var(--primary-color);
+            background-color: var(--firebase-color);
             color: white;
             padding: 8px 12px;
             border-radius: 15px;
             font-size: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(255,111,0,0.3);
             z-index: 1000;
             transform: translateX(100%);
             transition: transform 0.3s ease;
@@ -585,20 +634,20 @@
             transform: translateX(0);
         }
         
-        /* مؤشر التحديث المباشر */
-        .live-update-indicator {
+        /* مؤشر Firebase */
+        .firebase-indicator {
             display: inline-flex;
             align-items: center;
             gap: 5px;
             font-size: 12px;
-            color: var(--sync-color);
+            color: var(--firebase-color);
             margin-left: 10px;
         }
         
-        .live-update-indicator .pulse {
+        .firebase-indicator .pulse {
             width: 8px;
             height: 8px;
-            background-color: var(--sync-color);
+            background-color: var(--firebase-color);
             border-radius: 50%;
             animation: pulse 1.5s infinite;
         }
@@ -609,60 +658,42 @@
             100% { transform: scale(0.95); opacity: 0.7; }
         }
         
-        /* وضع الاتصال */
-        .connection-status {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .connection-info {
+        /* حالة المزامنة */
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--firebase-color);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 25px;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(255,111,0,0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
         }
         
-        .connection-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: var(--success-color);
-        }
-        
-        .connection-dot.connecting {
+        .sync-status.connecting {
             background-color: var(--warning-color);
-            animation: pulse 1.5s infinite;
         }
         
-        .connection-dot.disconnected {
+        .sync-status.disconnected {
             background-color: var(--accent-color);
         }
         
-        .sync-controls {
-            display: flex;
-            gap: 10px;
+        .sync-status.syncing i {
+            animation: spin 1.5s linear infinite;
         }
         
-        .sync-toggle {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 11px;
-            cursor: pointer;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
-        .sync-toggle.disabled {
-            background-color: #95a5a6;
-        }
-        
-        /* تحسينات للشاشات المتوسطة والكبيرة */
+        /* تحسينات للشاشات */
         @media (min-width: 768px) {
             .container {
                 max-width: 95%;
@@ -708,7 +739,7 @@
             width: 50px;
             height: 50px;
             border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
+            border-top: 5px solid var(--firebase-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -780,140 +811,26 @@
         .form-group.error textarea {
             border-color: var(--accent-color);
         }
-
-        /* تحسينات للجوال */
-        @media (max-width: 767px) {
-            header {
-                flex-direction: column;
-                text-align: center;
-                padding: 15px 10px;
-            }
-            
-            .header-content {
-                margin-top: 10px;
-            }
-            
-            header h1 {
-                font-size: 18px;
-            }
-            
-            .form-section, .table-section {
-                padding: 15px;
-            }
-            
-            .section-title {
-                font-size: 18px;
-            }
-            
-            .user-info {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-            
-            .connection-status {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .sync-controls {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .stats {
-                gap: 8px;
-            }
-            
-            .stat-card {
-                min-width: calc(50% - 8px);
-                padding: 10px;
-            }
-            
-            .stat-number {
-                font-size: 16px;
-            }
-            
-            .filter-section {
-                flex-direction: column;
-            }
-            
-            .filter-group {
-                min-width: 100%;
-            }
-            
-            .actions {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-            
-            .data-table th, 
-            .data-table td {
-                padding: 8px 6px;
-                font-size: 12px;
-            }
-            
-            .action-cell {
-                flex-direction: column;
-                gap: 4px;
-            }
-            
-            .action-btn {
-                width: 100%;
-                padding: 6px;
-            }
-            
-            .online-users {
-                left: 20px;
-                right: 20px;
-                min-width: unset;
-            }
-            
-            .sync-status {
-                left: 20px;
-                right: 20px;
-                bottom: 70px;
-                justify-content: center;
-            }
+        
+        /* إعداد Firebase */
+        .firebase-setup {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
         }
-
-        /* تحسينات إضافية للجوال */
-        .mobile-tabs {
-            display: none;
+        
+        .firebase-setup h3 {
+            color: var(--warning-color);
+            margin-bottom: 10px;
         }
-
-        @media (max-width: 767px) {
-            .mobile-tabs {
-                display: flex;
-                margin-bottom: 15px;
-                border-bottom: 1px solid #ddd;
-            }
-            
-            .mobile-tab {
-                flex: 1;
-                text-align: center;
-                padding: 10px;
-                background: #f8f9fa;
-                cursor: pointer;
-                border-bottom: 3px solid transparent;
-            }
-            
-            .mobile-tab.active {
-                border-bottom-color: var(--primary-color);
-                background: white;
-                font-weight: bold;
-            }
-            
-            .content-section {
-                display: none;
-            }
-            
-            .content-section.active {
-                display: block;
-            }
+        
+        .firebase-setup p {
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -930,7 +847,7 @@
                     <i class="fas fa-mosque"></i>
                 </div>
                 <div class="header-content">
-                    <h1>تقارير الزيارات التفقدية للمساجد <span class="live-update-indicator" id="liveUpdateIndicator"><span class="pulse"></span> متزامن</span></h1>
+                    <h1>تقارير الزيارات التفقدية للمساجد <span class="firebase-indicator" id="firebaseIndicator"><span class="pulse"></span> Firebase</span></h1>
                     <p>المندوبية الإقليمية للشؤون الإسلامية - مكناس</p>
                 </div>
             </div>
@@ -948,7 +865,7 @@
             <div class="login-form">
                 <div class="form-group required">
                     <label for="username" id="username-label">اسم المتفقد</label>
-                    <select id="username" class="form-control">
+                    <select id="username">
                         <option value="">اختر اسم المتفقد</option>
                         <option value="بنعيسى هويتر">بنعيسى هويتر</option>
                         <option value="شهراوي محمد">شهراوي محمد</option>
@@ -994,16 +911,16 @@
             </button>
         </div>
 
-        <!-- معلومات الاتصال -->
-        <div id="connectionStatus" class="connection-status" style="display: none;">
+        <!-- معلومات الاتصال بـ Firebase -->
+        <div id="firebaseStatus" class="firebase-status" style="display: none;">
             <div class="connection-info">
                 <div class="connection-dot" id="connectionDot"></div>
-                <span id="connectionText">متصل بالخادم</span>
+                <span id="connectionText">متصل بـ Firebase</span>
                 <span id="onlineUsersCount">(0 مستخدمين متصلين)</span>
             </div>
-            <div class="sync-controls">
-                <button class="sync-toggle" id="syncToggle" onclick="toggleSync()">إيقاف المزامنة</button>
-                <button class="sync-toggle" onclick="showOnlineUsers()">المستخدمين المتصلين</button>
+            <div class="firebase-controls">
+                <button class="firebase-btn" onclick="showOnlineUsers()">المستخدمين المتصلين</button>
+                <button class="firebase-btn" onclick="testFirebaseConnection()">اختبار الاتصال</button>
             </div>
         </div>
 
@@ -1011,7 +928,7 @@
         <div class="online-users" id="onlineUsers">
             <h4>المستخدمين المتصلين</h4>
             <div id="usersList">
-                <!-- سيتم ملؤها بالبيانات -->
+                <!-- سيتم ملؤها بالبيانات من Firebase -->
             </div>
         </div>
 
@@ -1039,15 +956,9 @@
                 <div class="stat-title">مكتملة</div>
             </div>
         </div>
-
-        <!-- علامات التبويب للجوال -->
-        <div class="mobile-tabs" id="mobileTabs" style="display: none;">
-            <div class="mobile-tab active" onclick="switchMobileTab('form')">النموذج</div>
-            <div class="mobile-tab" onclick="switchMobileTab('reports')">التقارير</div>
-        </div>
         
         <div class="app-content" style="display: none;">
-            <div class="form-section content-section active" id="formTab">
+            <div class="form-section">
                 <h2 class="section-title">استمارة تفقدية للمساجد</h2>
                 
                 <div class="form-row">
@@ -1093,7 +1004,7 @@
                             <option value="شهراوي محمد">شهراوي محمد</option>
                             <option value="بنعكي محمد">بنعكي محمد</option>
                             <option value="غزلان فؤاد">غزلان فؤاد</option>
-                            <option value="ناصفي فؤاد">ناصفي فؤاد</option>
+                            <option value="ناصفي فؤاد">ناصфи فؤاد</option>
                             <option value="راجعي خالد">راجعي خالد</option>
                             <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
                             <option value="اليوسفي ياسين">اليوسفي ياسين</option>
@@ -1206,7 +1117,7 @@
                 </div>
             </div>
             
-            <div class="table-section content-section" id="reportsTab">
+            <div class="table-section">
                 <h2 class="section-title">التقارير المسجلة</h2>
                 
                 <!-- فلتر التقرير الحالي -->
@@ -1228,7 +1139,7 @@
                             <option value="ناصفي فؤاد">ناصفي فؤاد</option>
                             <option value="راجعي خالد">راجعي خالد</option>
                             <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
-                            <option value="اليوسфи ياسين">اليوسفي ياسين</option>
+                            <option value="اليوسفي ياسين">اليوسفي ياسين</option>
                             <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
                         </select>
                     </div>
@@ -1274,7 +1185,7 @@
                             </tr>
                         </thead>
                         <tbody id="reportsTable">
-                            <!-- سيتم ملؤها بالبيانات -->
+                            <!-- سيتم ملؤها بالبيانات من Firebase -->
                         </tbody>
                     </table>
                 </div>
@@ -1302,7 +1213,7 @@
     <div class="confirmation-modal" id="confirmationModal">
         <div class="confirmation-content">
             <h3 id="confirmationTitle">تأكيد الإجراء</h3>
-            <p id="confirmationMessage">هل أنت متأكد من أنك تريد تنفيذ هذا الإجراء؟</p>
+            <p id="confirmationMessage">هل أنت متأكد من أنك تريد تنفيذ هذا الإجراء?</p>
             <div class="confirmation-buttons">
                 <button class="btn btn-danger" id="confirmAction">نعم</button>
                 <button class="btn btn-primary" onclick="hideConfirmation()">إلغاء</button>
@@ -1316,29 +1227,31 @@
         <span id="notification-text"></span>
     </div>
 
-    <!-- حالة المزامنة -->
+    <!-- حالة المزامنة مع Firebase -->
     <div class="sync-status" id="syncStatus">
-        <i class="fas fa-wifi"></i>
-        <span>متصل</span>
+        <i class="fas fa-database"></i>
+        <span>Firebase</span>
     </div>
 
     <script>
         // ======== متغيرات النظام ========
-        let reports = JSON.parse(localStorage.getItem('mosqueReports')) || [];
+        let reports = [];
         let currentUser = null;
         let userRole = null;
         let userType = 'inspector';
         let currentFilter = '';
         let autoFilterEnabled = true;
         let formChanged = false;
-        let syncEnabled = true;
+        let firebaseReady = false;
         let onlineUsers = new Map();
-        let lastSyncTime = Date.now();
         
-        // متغيرات المزامنة الفورية
-        let syncInterval = null;
-        let heartbeatInterval = null;
-        let activityTimeout = null;
+        // متغيرات Firebase
+        let database = null;
+        let auth = null;
+        let reportsRef = null;
+        let onlineUsersRef = null;
+        let activitiesRef = null;
+        let userId = null;
         
         // ======== عناصر DOM ========
         const notification = document.getElementById('notification');
@@ -1346,40 +1259,162 @@
         const syncStatus = document.getElementById('syncStatus');
         const loginSection = document.getElementById('loginSection');
         const userInfo = document.getElementById('userInfo');
-        const connectionStatus = document.getElementById('connectionStatus');
+        const firebaseStatus = document.getElementById('firebaseStatus');
         const onlineUsersPanel = document.getElementById('onlineUsers');
         const activityIndicator = document.getElementById('activityIndicator');
-        const liveUpdateIndicator = document.getElementById('liveUpdateIndicator');
-        const mobileTabs = document.getElementById('mobileTabs');
+        const firebaseIndicator = document.getElementById('firebaseIndicator');
         
         // ======== تهيئة النظام ========
         document.addEventListener('DOMContentLoaded', function() {
-            checkSavedSession();
+            showLoading();
+            
+            // انتظار تحميل Firebase
+            setTimeout(() => {
+                initializeFirebase();
+            }, 1000);
+            
+            setupEventListeners();
+            setCurrentDate();
+        });
+        
+        // ======== تهيئة Firebase (مع تحسينات للأخطاء) ========
+        async function initializeFirebase() {
+            try {
+                console.log('بدء تهيئة Firebase...');
+                
+                // التحقق من توفر Firebase
+                if (!window.firebase) {
+                    throw new Error('Firebase غير متوفر');
+                }
+                
+                database = window.firebase.database;
+                auth = window.firebase.auth;
+                
+                // إعداد المراجع
+                reportsRef = window.firebase.ref(database, 'reports');
+                onlineUsersRef = window.firebase.ref(database, 'onlineUsers');
+                activitiesRef = window.firebase.ref(database, 'activities');
+                
+                // تسجيل دخول مجهول للمصادقة (مع try-catch إضافي)
+                try {
+                    await window.firebase.signInAnonymously(auth);
+                    console.log('تم تسجيل الدخول المجهول');
+                } catch (authError) {
+                    console.error('خطأ في تسجيل الدخول:', authError);
+                    throw new Error('فشل في تسجيل الدخول المجهول: ' + authError.message);
+                }
+                
+                // مراقبة حالة المصادقة
+                window.firebase.onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log('تم تسجيل الدخول بنجاح:', userId);
+                        firebaseReady = true;
+                        updateFirebaseStatus('connected');
+                        setupFirebaseListeners();
+                        checkSavedSession();
+                        hideLoading();
+                    } else {
+                        console.log('فشل في تسجيل الدخول');
+                        updateFirebaseStatus('disconnected');
+                        hideLoading();
+                    }
+                });
+                
+            } catch (error) {
+                console.error('خطأ في تهيئة Firebase:', error);
+                updateFirebaseStatus('error');
+                
+                // استخدام التخزين المحلي كبديل
+                showNotification('تعذر الاتصال بـ Firebase، سيتم استخدام التخزين المحلي: ' + error.message, true, 'firebase');
+                initializeLocalStorage();
+                hideLoading();
+            }
+        }
+        
+        // ======== الدالة المفقودة للتخزين المحلي ========
+        function initializeLocalStorage() {
+            console.log('تهيئة التخزين المحلي...');
+            reports = JSON.parse(localStorage.getItem('mosqueReports') || '[]');
             loadReports();
             updateStats();
-            setCurrentDate();
-            setupEventListeners();
-            initializeRealTimeSync();
-            checkMobileView();
-        });
+            firebaseReady = false;
+            updateFirebaseStatus('disconnected');
+        }
+        
+        // ======== إعداد مستمعي Firebase ========
+        function setupFirebaseListeners() {
+            if (!firebaseReady) return;
+            
+            // مراقبة التقارير
+            window.firebase.onValue(reportsRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const firebaseReports = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    }));
+                    
+                    updateLocalReports(firebaseReports);
+                }
+            });
+            
+            // مراقبة المستخدمين المتصلين
+            window.firebase.onValue(onlineUsersRef, (snapshot) => {
+                const data = snapshot.val();
+                updateOnlineUsersDisplay(data || {});
+            });
+            
+            // مراقبة الأنشطة
+            window.firebase.onValue(activitiesRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const activities = Object.values(data);
+                    const latestActivity = activities[activities.length - 1];
+                    if (latestActivity && latestActivity.user !== currentUser) {
+                        showUserActivity(latestActivity);
+                    }
+                }
+            });
+        }
+        
+        // ======== تحديث التقارير المحلية ========
+        function updateLocalReports(firebaseReports) {
+            const previousCount = reports.length;
+            reports = firebaseReports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            loadReports();
+            updateStats();
+            
+            // إشعار بالتقارير الجديدة
+            if (reports.length > previousCount) {
+                const newCount = reports.length - previousCount;
+                showNotification(`تم إضافة ${newCount} تقرير جديد`, false, 'firebase');
+                
+                // تمييز التقارير الجديدة
+                highlightNewRecords(reports.slice(0, newCount));
+            }
+        }
         
         // ======== وظائف تسجيل الدخول ========
         function setUserType(type) {
             userType = type;
-            document.getElementById('btn-inspector').classList.toggle('active', type === 'inspector');
-            document.getElementById('btn-admin').classList.toggle('active', type === 'admin');
+            const btnInspector = document.getElementById('btn-inspector');
+            const btnAdmin = document.getElementById('btn-admin');
+            if (btnInspector) btnInspector.classList.toggle('active', type === 'inspector');
+            if (btnAdmin) btnAdmin.classList.toggle('active', type === 'admin');
             
             const usernameSelect = document.getElementById('username');
             const usernameLabel = document.getElementById('username-label');
             const adminInfo = document.getElementById('admin-info');
             
             if (type === 'admin') {
-                usernameLabel.textContent = 'اسم المدير';
-                usernameSelect.innerHTML = '<option value="العمراوي نورالدين">العمراوي نورالدين</option>';
-                adminInfo.style.display = 'block';
+                if (usernameLabel) usernameLabel.textContent = 'اسم المدير';
+                if (usernameSelect) usernameSelect.innerHTML = '<option value="العمراوي نورالدين">العمراوي نورالدين</option>';
+                if (adminInfo) adminInfo.style.display = 'block';
             } else {
-                usernameLabel.textContent = 'اسم المتفقد';
-                usernameSelect.innerHTML = `
+                if (usernameLabel) usernameLabel.textContent = 'اسم المتفقد';
+                if (usernameSelect) usernameSelect.innerHTML = `
                     <option value="">اختر اسم المتفقد</option>
                     <option value="بنعيسى هويتر">بنعيسى هويتر</option>
                     <option value="شهراوي محمد">شهراوي محمد</option>
@@ -1391,28 +1426,37 @@
                     <option value="اليوسفي ياسين">اليوسفي ياسين</option>
                     <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
                 `;
-                adminInfo.style.display = 'none';
+                if (adminInfo) adminInfo.style.display = 'none';
             }
         }
         
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
-            const eyeIcon = document.getElementById('passwordToggle').querySelector('i');
+            const passwordToggle = document.getElementById('passwordToggle');
+            if (!passwordInput || !passwordToggle) return;
+            const eyeIcon = passwordToggle.querySelector('i');
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                eyeIcon.classList.remove('fa-eye');
-                eyeIcon.classList.add('fa-eye-slash');
+                if (eyeIcon) {
+                    eyeIcon.classList.remove('fa-eye');
+                    eyeIcon.classList.add('fa-eye-slash');
+                }
             } else {
                 passwordInput.type = 'password';
-                eyeIcon.classList.remove('fa-eye-slash');
-                eyeIcon.classList.add('fa-eye');
+                if (eyeIcon) {
+                    eyeIcon.classList.remove('fa-eye-slash');
+                    eyeIcon.classList.add('fa-eye');
+                }
             }
         }
         
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+        async function login() {
+            const usernameSelect = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            if (!usernameSelect || !passwordInput) return;
+            const username = usernameSelect.value;
+            const password = passwordInput.value;
             
             if (!username) {
                 showNotification('يرجى اختيار اسم المستخدم', true);
@@ -1430,7 +1474,6 @@
             if (userType === 'admin') {
                 loginValid = (username === 'العمراوي نورالدين' && password === 'admin2023');
             } else {
-                // للمتفقدين: كلمة المرور = اسم المستخدم (مبسط للمثال)
                 loginValid = (password === username);
             }
             
@@ -1442,243 +1485,107 @@
                 sessionStorage.setItem('currentUser', currentUser);
                 sessionStorage.setItem('userRole', userRole);
                 
-                showAppContent();
-                showNotification('تم تسجيل الدخول بنجاح!');
+                // إضافة المستخدم للقائمة المتصلة في Firebase
+                if (firebaseReady) {
+                    await addUserToOnlineList();
+                }
                 
-                // إعلان الدخول للنظام
-                announceUserActivity('login');
+                showAppContent();
+                showNotification('تم تسجيل الدخول بنجاح!', false, 'firebase');
+                
+                // إعلان النشاط
+                await announceUserActivity('login');
                 
             } else {
                 showNotification('بيانات الدخول غير صحيحة', true);
             }
         }
         
-        function logout() {
-            showConfirmation('تسجيل الخروج', 'هل أنت متأكد من أنك تريد تسجيل الخروج؟', function() {
+        async function logout() {
+            showConfirmation('تسجيل الخروج', 'هل أنت متأكد من أنك تريد تسجيل الخروج؟', async function() {
                 // إعلان الخروج
-                announceUserActivity('logout');
+                await announceUserActivity('logout');
                 
-                // إزالة المستخدم من القائمة
-                onlineUsers.delete(currentUser);
-                updateOnlineUsersDisplay();
+                // إزالة المستخدم من القائمة المتصلة
+                if (firebaseReady && userId) {
+                    const userRef = window.firebase.ref(database, `onlineUsers/${userId}`);
+                    await window.firebase.remove(userRef);
+                }
                 
                 // مسح البيانات
                 currentUser = null;
                 userRole = null;
+                userId = null;
                 sessionStorage.clear();
                 
-                // إعادة تعيين الواجهة
                 showLoginSection();
                 showNotification('تم تسجيل الخروج بنجاح');
-                
-                // إيقاف المزامنة
-                stopRealTimeSync();
             });
         }
         
-        // ======== وظائف الواجهة ========
-        function showAppContent() {
-            loginSection.style.display = 'none';
-            userInfo.style.display = 'flex';
-            connectionStatus.style.display = 'flex';
-            document.querySelector('.stats').style.display = 'flex';
-            document.querySelector('.app-content').style.display = 'flex';
-            document.querySelector('footer').style.display = 'block';
+        // ======== إدارة المستخدمين المتصلين ========
+        async function addUserToOnlineList() {
+            if (!firebaseReady || !userId) return;
             
-            // عرض علامات التبويب للجوال إذا لزم الأمر
-            checkMobileView();
-            
-            // تحديث معلومات المستخدم
-            document.getElementById('currentUser').textContent = currentUser;
-            document.getElementById('userRole').textContent = `(${userRole === 'admin' ? 'مدير' : 'متفقد'})`;
-            
-            // إعداد صلاحيات المدير
-            const adminElements = document.querySelectorAll('.admin-only');
-            adminElements.forEach(el => {
-                if (userRole === 'admin') {
-                    el.classList.add('admin-visible');
-                } else {
-                    el.classList.remove('admin-visible');
-                }
-            });
-            
-            // تطبيق التصفية التلقائية للمتفقدين
-            if (userRole === 'inspector') {
-                autoFilterEnabled = true;
-                currentFilter = currentUser;
-                document.getElementById('currentFilterInfo').style.display = 'flex';
-                document.getElementById('filterText').textContent = `يتم عرض التقارير الخاصة بـ: ${currentUser}`;
-            } else {
-                autoFilterEnabled = false;
-                document.getElementById('currentFilterInfo').style.display = 'none';
-            }
-            
-            loadReports();
-            startRealTimeSync();
-        }
-        
-        function showLoginSection() {
-            loginSection.style.display = 'block';
-            userInfo.style.display = 'none';
-            connectionStatus.style.display = 'none';
-            document.querySelector('.stats').style.display = 'none';
-            document.querySelector('.app-content').style.display = 'none';
-            document.querySelector('footer').style.display = 'none';
-            mobileTabs.style.display = 'none';
-            
-            // إعادة تعيين النموذج
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            setUserType('inspector');
-        }
-        
-        // ======== نظام المزامنة الفورية ========
-        function initializeRealTimeSync() {
-            // محاكاة قاعدة البيانات المشتركة باستخدام localStorage
-            if (!localStorage.getItem('sharedReports')) {
-                localStorage.setItem('sharedReports', JSON.stringify([]));
-            }
-            
-            if (!localStorage.getItem('onlineUsers')) {
-                localStorage.setItem('onlineUsers', JSON.stringify({}));
-            }
-            
-            if (!localStorage.getItem('lastActivity')) {
-                localStorage.setItem('lastActivity', JSON.stringify({}));
-            }
-        }
-        
-        function startRealTimeSync() {
-            if (!syncEnabled) return;
-            
-            // إضافة المستخدم للقائمة المتصلة
-            const users = JSON.parse(localStorage.getItem('onlineUsers') || '{}');
-            users[currentUser] = {
+            const userRef = window.firebase.ref(database, `onlineUsers/${userId}`);
+            const userData = {
                 name: currentUser,
                 role: userRole,
-                lastSeen: Date.now(),
+                lastSeen: window.firebase.serverTimestamp(),
                 status: 'online'
             };
-            localStorage.setItem('onlineUsers', JSON.stringify(users));
-            onlineUsers.set(currentUser, users[currentUser]);
             
-            // بدء المزامنة المستمرة
-            syncInterval = setInterval(() => {
-                checkForUpdates();
-                updateHeartbeat();
-            }, 2000); // كل ثانيتين
+            await window.firebase.set(userRef, userData);
             
-            // بدء مراقبة النشاط
-            heartbeatInterval = setInterval(() => {
-                sendHeartbeat();
-                cleanupOfflineUsers();
-            }, 5000); // كل 5 ثوان
-            
-            updateSyncStatus('connected');
-            showNotification('تم تفعيل المزامنة الفورية', false, 'sync');
+            // إعداد إزالة تلقائية عند قطع الاتصال
+            window.firebase.onDisconnect(userRef).remove();
         }
         
-        function stopRealTimeSync() {
-            if (syncInterval) {
-                clearInterval(syncInterval);
-                syncInterval = null;
+        function updateOnlineUsersDisplay(onlineUsersData) {
+            const onlineUsersCount = document.getElementById('onlineUsersCount');
+            if (onlineUsersCount) {
+                const count = Object.keys(onlineUsersData).length;
+                onlineUsersCount.textContent = `(${count} مستخدمين متصلين)`;
             }
             
-            if (heartbeatInterval) {
-                clearInterval(heartbeatInterval);
-                heartbeatInterval = null;
-            }
+            const usersList = document.getElementById('usersList');
+            if (!usersList) return;
+            usersList.innerHTML = '';
             
-            updateSyncStatus('disconnected');
+            Object.values(onlineUsersData).forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-status"></div>
+                    <span>${user.name} (${user.role === 'admin' ? 'مدير' : 'متفقد'})</span>
+                `;
+                usersList.appendChild(userItem);
+            });
         }
         
-        function checkForUpdates() {
-            if (!syncEnabled) return;
+        // ======== الأنشطة ========
+        async function announceUserActivity(action, details = {}) {
+            if (!firebaseReady) return;
             
-            try {
-                // التحقق من التقارير الجديدة
-                const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
-                const localReportsCount = reports.length;
-                
-                if (sharedReports.length !== localReportsCount) {
-                    const newReports = sharedReports.filter(sr => 
-                        !reports.some(r => r.id === sr.id)
-                    );
-                    
-                    if (newReports.length > 0) {
-                        reports = [...sharedReports];
-                        localStorage.setItem('mosqueReports', JSON.stringify(reports));
-                        
-                        loadReports();
-                        updateStats();
-                        
-                        // إظهار التقارير الجديدة بتأثير بصري
-                        highlightNewRecords(newReports);
-                        
-                        showNotification(`تم إضافة ${newReports.length} تقرير جديد`, false, 'sync');
-                    }
-                }
-                
-                // التحقق من المستخدمين المتصلين
-                updateOnlineUsers();
-                
-                // التحقق من الأنشطة الجديدة
-                checkForNewActivity();
-                
-            } catch (error) {
-                console.error('خطأ في المزامنة:', error);
-            }
-        }
-        
-        function announceUserActivity(action, details = {}) {
             const activity = {
                 user: currentUser,
                 action: action,
                 details: details,
-                timestamp: Date.now()
+                timestamp: window.firebase.serverTimestamp()
             };
             
-            // حفظ النشاط
-            const activities = JSON.parse(localStorage.getItem('lastActivity') || '{}');
-            activities[currentUser] = activity;
-            localStorage.setItem('lastActivity', JSON.stringify(activities));
-            
-            // إعلان النشاط للمستخدمين الآخرين
-            broadcastActivity(activity);
-        }
-        
-        function broadcastActivity(activity) {
-            // محاكاة البث للمستخدمين الآخرين
-            const event = new CustomEvent('userActivity', { detail: activity });
-            window.dispatchEvent(event);
-        }
-        
-        function checkForNewActivity() {
-            const activities = JSON.parse(localStorage.getItem('lastActivity') || '{}');
-            
-            Object.keys(activities).forEach(user => {
-                if (user !== currentUser) {
-                    const activity = activities[user];
-                    const timeDiff = Date.now() - activity.timestamp;
-                    
-                    // إظهار النشاط إذا كان حديثاً (أقل من 10 ثوان)
-                    if (timeDiff < 10000 && !activity.shown) {
-                        showUserActivity(activity);
-                        activity.shown = true;
-                        activities[user] = activity;
-                        localStorage.setItem('lastActivity', JSON.stringify(activities));
-                    }
-                }
-            });
+            await window.firebase.push(activitiesRef, activity);
         }
         
         function showUserActivity(activity) {
-            const activityText = getActivityText(activity);
-            document.getElementById('activityText').textContent = activityText;
+            const activityTextEl = document.getElementById('activityText');
+            if (activityTextEl) {
+                const activityText = getActivityText(activity);
+                activityTextEl.textContent = activityText;
+            }
             
             activityIndicator.classList.add('show');
             
-            // إخفاء بعد 3 ثوان
             setTimeout(() => {
                 activityIndicator.classList.remove('show');
             }, 3000);
@@ -1701,169 +1608,81 @@
             }
         }
         
-        function updateOnlineUsers() {
-            const users = JSON.parse(localStorage.getItem('onlineUsers') || '{}');
-            onlineUsers.clear();
+        // ======== وظائف الواجهة (مع checks للـ DOM) ========
+        function showAppContent() {
+            if (loginSection) loginSection.style.display = 'none';
+            if (userInfo) userInfo.style.display = 'flex';
+            if (firebaseStatus) firebaseStatus.style.display = 'flex';
+            const statsSection = document.querySelector('.stats');
+            if (statsSection) statsSection.style.display = 'flex';
+            const appContent = document.querySelector('.app-content');
+            if (appContent) appContent.style.display = 'flex';
+            const footer = document.querySelector('footer');
+            if (footer) footer.style.display = 'block';
             
-            Object.values(users).forEach(user => {
-                const timeDiff = Date.now() - user.lastSeen;
-                
-                // تحديد حالة المستخدم
-                if (timeDiff < 10000) { // أقل من 10 ثوان
-                    user.status = 'online';
-                } else if (timeDiff < 60000) { // أقل من دقيقة
-                    user.status = 'idle';
-                } else { // أكثر من دقيقة
-                    user.status = 'offline'
-                }
-                
-                onlineUsers.set(user.name, user);
-            });
+            const currentUserEl = document.getElementById('currentUser');
+            const userRoleEl = document.getElementById('userRole');
+            if (currentUserEl) currentUserEl.textContent = currentUser;
+            if (userRoleEl) userRoleEl.textContent = `(${userRole === 'admin' ? 'مدير' : 'متفقد'})`;
             
-            updateOnlineUsersDisplay();
-        }
-        
-        function updateOnlineUsersDisplay() {
-            const onlineCount = Array.from(onlineUsers.values()).filter(u => u.status === 'online').length;
-            document.getElementById('onlineUsersCount').textContent = `(${onlineCount} مستخدمين متصلين)`;
-            
-            // تحديث قائمة المستخدمين
-            const usersList = document.getElementById('usersList');
-            usersList.innerHTML = '';
-            
-            Array.from(onlineUsers.values()).forEach(user => {
-                const userItem = document.createElement('div');
-                userItem.className = 'user-item';
-                userItem.innerHTML = `
-                    <div class="user-status ${user.status}"></div>
-                    <span>${user.name} (${user.role === 'admin' ? 'مدير' : 'متفقد'})</span>
-                `;
-                usersList.appendChild(userItem);
-            });
-        }
-        
-        function sendHeartbeat() {
-            if (!currentUser) return;
-            
-            const users = JSON.parse(localStorage.getItem('onlineUsers') || '{}');
-            if (users[currentUser]) {
-                users[currentUser].lastSeen = Date.now();
-                localStorage.setItem('onlineUsers', JSON.stringify(users));
-            }
-        }
-        
-        function cleanupOfflineUsers() {
-            const users = JSON.parse(localStorage.getItem('onlineUsers') || '{}');
-            const now = Date.now();
-            let changed = false;
-            
-            Object.keys(users).forEach(username => {
-                const user = users[username];
-                const timeDiff = now - user.lastSeen;
-                
-                // إزالة المستخدمين الذين لم يظهروا لأكثر من 5 دقائق
-                if (timeDiff > 300000) {
-                    delete users[username];
-                    changed = true;
+            const adminElements = document.querySelectorAll('.admin-only');
+            adminElements.forEach(el => {
+                if (userRole === 'admin') {
+                    el.classList.add('admin-visible');
+                } else {
+                    el.classList.remove('admin-visible');
                 }
             });
             
-            if (changed) {
-                localStorage.setItem('onlineUsers', JSON.stringify(users));
-            }
-        }
-        
-        function highlightNewRecords(newReports) {
-            // تأخير قليل للسماح بتحميل الجدول
-            setTimeout(() => {
-                newReports.forEach(report => {
-                    const rows = document.querySelectorAll('#reportsTable tr');
-                    rows.forEach(row => {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length > 0 && cells[0].textContent === report.number) {
-                            row.classList.add('new-record');
-                            // إزالة التمييز بعد 3 ثوان
-                            setTimeout(() => {
-                                row.classList.remove('new-record');
-                            }, 3000);
-                        }
-                    });
-                });
-            }, 500);
-        }
-        
-        function updateSyncStatus(status) {
-            const syncStatusEl = document.getElementById('syncStatus');
-            const connectionDot = document.getElementById('connectionDot');
-            const connectionText = document.getElementById('connectionText');
-            
-            syncStatusEl.className = 'sync-status';
-            connectionDot.className = 'connection-dot';
-            
-            switch(status) {
-                case 'connected':
-                    syncStatusEl.innerHTML = '<i class="fas fa-wifi"></i><span>متصل</span>';
-                    connectionText.textContent = 'متصل بالخادم';
-                    break;
-                case 'syncing':
-                    syncStatusEl.classList.add('syncing');
-                    syncStatusEl.innerHTML = '<i class="fas fa-sync-alt"></i><span>جاري المزامنة</span>';
-                    break;
-                case 'connecting':
-                    syncStatusEl.classList.add('connecting');
-                    connectionDot.classList.add('connecting');
-                    syncStatusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>جاري الاتصال</span>';
-                    connectionText.textContent = 'جاري الاتصال...';
-                    break;
-                case 'disconnected':
-                    syncStatusEl.classList.add('disconnected');
-                    connectionDot.classList.add('disconnected');
-                    syncStatusEl.innerHTML = '<i class="fas fa-wifi-slash"></i><span>غير متصل</span>';
-                    connectionText.textContent = 'غير متصل';
-                    break;
-            }
-        }
-        
-        // ======== وظائف التحكم في المزامنة ========
-        function toggleSync() {
-            syncEnabled = !syncEnabled;
-            const syncToggle = document.getElementById('syncToggle');
-            
-            if (syncEnabled) {
-                startRealTimeSync();
-                syncToggle.textContent = 'إيقاف المزامنة';
-                syncToggle.classList.remove('disabled');
+            const currentFilterInfo = document.getElementById('currentFilterInfo');
+            const filterText = document.getElementById('filterText');
+            if (userRole === 'inspector') {
+                autoFilterEnabled = true;
+                currentFilter = currentUser;
+                if (currentFilterInfo) currentFilterInfo.style.display = 'flex';
+                if (filterText) filterText.textContent = `يتم عرض التقارير الخاصة بـ: ${currentUser}`;
             } else {
-                stopRealTimeSync();
-                syncToggle.textContent = 'تفعيل المزامنة';
-                syncToggle.classList.add('disabled');
+                autoFilterEnabled = false;
+                currentFilter = '';
+                if (currentFilterInfo) currentFilterInfo.style.display = 'none';
             }
+            
+            loadReports();
+            updateStats();
         }
         
-        function showOnlineUsers() {
-            const panel = document.getElementById('onlineUsers');
-            panel.classList.toggle('show');
+        function showLoginSection() {
+            if (loginSection) loginSection.style.display = 'block';
+            if (userInfo) userInfo.style.display = 'none';
+            if (firebaseStatus) firebaseStatus.style.display = 'none';
+            const statsSection = document.querySelector('.stats');
+            if (statsSection) statsSection.style.display = 'none';
+            const appContent = document.querySelector('.app-content');
+            if (appContent) appContent.style.display = 'none';
+            const footer = document.querySelector('footer');
+            if (footer) footer.style.display = 'none';
             
-            // إخفاء تلقائي بعد 5 ثوان
-            setTimeout(() => {
-                panel.classList.remove('show');
-            }, 5000);
+            const usernameEl = document.getElementById('username');
+            const passwordEl = document.getElementById('password');
+            if (usernameEl) usernameEl.value = '';
+            if (passwordEl) passwordEl.value = '';
+            setUserType('inspector');
         }
         
         // ======== وظائف النموذج ========
         function validateForm() {
             let isValid = true;
             
-            // إخفاء جميع رسائل الخطأ
-            document.querySelectorAll('.form-error').forEach(el => {
-                el.style.display = 'none';
+            const formErrors = document.querySelectorAll('.form-error');
+            formErrors.forEach(el => {
+                if (el) el.style.display = 'none';
             });
             
-            document.querySelectorAll('.form-group').forEach(el => {
-                el.classList.remove('error');
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach(el => {
+                if (el) el.classList.remove('error');
             });
             
-            // التحقق من الحقول الإلزامية
             const requiredFields = [
                 'number', 'month', 'inspector', 'employee-id', 
                 'mosque-name', 'info-code', 'community', 'visit-date',
@@ -1872,10 +1691,12 @@
             
             requiredFields.forEach(field => {
                 const element = document.getElementById(field);
-                if (!element.value.trim()) {
+                if (element && !element.value.trim()) {
                     isValid = false;
-                    element.closest('.form-group').classList.add('error');
-                    document.getElementById(`${field}-error`).style.display = 'block';
+                    const group = element.closest('.form-group');
+                    if (group) group.classList.add('error');
+                    const errorEl = document.getElementById(`${field}-error`);
+                    if (errorEl) errorEl.style.display = 'block';
                 }
             });
             
@@ -1894,75 +1715,93 @@
             }
         }
         
-        function submitForm() {
+        async function submitForm() {
             if (!currentUser) {
                 showNotification('يرجى تسجيل الدخول أولاً', true);
                 return;
             }
             
-            updateSyncStatus('syncing');
+            updateFirebaseStatus('syncing');
             
-            // جمع بيانات النموذج
+            const numberEl = document.getElementById('number');
+            const regionalEl = document.getElementById('regional-delegation');
+            const monthEl = document.getElementById('month');
+            const inspectorEl = document.getElementById('inspector');
+            const employeeIdEl = document.getElementById('employee-id');
+            const mosqueNameEl = document.getElementById('mosque-name');
+            const infoCodeEl = document.getElementById('info-code');
+            const communityEl = document.getElementById('community');
+            const visitDateEl = document.getElementById('visit-date');
+            const visitTopicEl = document.getElementById('visit-topic');
+            const notesEl = document.getElementById('notes');
+            const actionsEl = document.getElementById('actions');
+            const attachmentsEl = document.getElementById('attachments');
+            
+            if (!numberEl || !regionalEl || !monthEl || !inspectorEl || !employeeIdEl || !mosqueNameEl || !infoCodeEl || !communityEl || !visitDateEl || !visitTopicEl || !notesEl || !actionsEl || !attachmentsEl) {
+                showNotification('خطأ في تحميل النموذج', true);
+                return;
+            }
+            
             const formData = {
-                id: Date.now(),
-                number: document.getElementById('number').value,
-                regionalDelegation: document.getElementById('regional-delegation').value,
-                month: document.getElementById('month').value,
-                inspector: document.getElementById('inspector').value,
-                employeeId: document.getElementById('employee-id').value,
-                mosqueName: document.getElementById('mosque-name').value,
-                infoCode: document.getElementById('info-code').value,
-                community: document.getElementById('community').value,
-                visitDate: document.getElementById('visit-date').value,
-                visitTopic: document.getElementById('visit-topic').value,
-                notes: document.getElementById('notes').value,
-                actions: document.getElementById('actions').value,
-                attachments: document.getElementById('attachments').value,
+                number: numberEl.value,
+                regionalDelegation: regionalEl.value,
+                month: monthEl.value,
+                inspector: inspectorEl.value,
+                employeeId: employeeIdEl.value,
+                mosqueName: mosqueNameEl.value,
+                infoCode: infoCodeEl.value,
+                community: communityEl.value,
+                visitDate: visitDateEl.value,
+                visitTopic: visitTopicEl.value,
+                notes: notesEl.value,
+                actions: actionsEl.value,
+                attachments: attachmentsEl.value,
                 createdAt: new Date().toISOString(),
                 createdBy: currentUser
             };
             
-            // إضافة للتقارير المحلية
-            reports.push(formData);
-            localStorage.setItem('mosqueReports', JSON.stringify(reports));
-            
-            // مزامنة مع التخزين المشترك
-            const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
-            sharedReports.push(formData);
-            localStorage.setItem('sharedReports', JSON.stringify(sharedReports));
-            
-            // تحديث الجدول
-            addReportToTable(formData);
-            updateStats();
-            
-            // مسح النموذج
-            clearForm();
-            
-            // إعلان النشاط
-            announceUserActivity('add_report', { 
-                mosqueName: formData.mosqueName,
-                reportId: formData.id 
-            });
-            
-            updateSyncStatus('connected');
-            showNotification('تم إضافة التقرير وإرساله لجميع المستخدمين!', false, 'sync');
-            
-            formChanged = false;
+            try {
+                if (firebaseReady) {
+                    await window.firebase.push(reportsRef, formData);
+                    showNotification('تم إضافة التقرير وإرساله لجميع المستخدمين!', false, 'firebase');
+                } else {
+                    reports.push({ id: Date.now().toString(), ...formData });
+                    localStorage.setItem('mosqueReports', JSON.stringify(reports));
+                    loadReports();
+                    updateStats();
+                    showNotification('تم إضافة التقرير محلياً (Firebase غير متاح)', false);
+                }
+                
+                clearForm();
+                await announceUserActivity('add_report', { 
+                    mosqueName: formData.mosqueName 
+                });
+                
+                updateFirebaseStatus('connected');
+                formChanged = false;
+                
+            } catch (error) {
+                console.error('خطأ في إضافة التقرير:', error);
+                showNotification('حدث خطأ أثناء إضافة التقرير', true);
+                updateFirebaseStatus('error');
+            }
         }
         
         function clearForm() {
             const fields = ['number', 'mosque-name', 'info-code', 'visit-topic', 'notes', 'actions', 'attachments'];
             fields.forEach(field => {
-                document.getElementById(field).value = '';
+                const el = document.getElementById(field);
+                if (el) el.value = '';
             });
             
-            // إخفاء رسائل الخطأ
-            document.querySelectorAll('.form-error').forEach(el => {
-                el.style.display = 'none';
+            const formErrors = document.querySelectorAll('.form-error');
+            formErrors.forEach(el => {
+                if (el) el.style.display = 'none';
             });
             
-            document.querySelectorAll('.form-group').forEach(el => {
-                el.classList.remove('error');
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach(el => {
+                if (el) el.classList.remove('error');
             });
             
             setCurrentDate();
@@ -1972,6 +1811,7 @@
         // ======== وظائف الجدول ========
         function loadReports() {
             const table = document.getElementById('reportsTable');
+            if (!table) return;
             table.innerHTML = '';
             
             if (reports.length === 0) {
@@ -1981,13 +1821,9 @@
             
             let reportsToShow = reports;
             
-            // تطبيق التصفية
             if (currentFilter) {
                 reportsToShow = reports.filter(report => report.inspector === currentFilter);
             }
-            
-            // ترتيب التقارير حسب التاريخ (الأحدث أولاً)
-            reportsToShow.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             reportsToShow.forEach(report => {
                 addReportToTable(report);
@@ -1996,6 +1832,7 @@
         
         function addReportToTable(report) {
             const table = document.getElementById('reportsTable');
+            if (!table) return;
             
             if (table.innerHTML.includes('لا توجد تقارير مسجلة')) {
                 table.innerHTML = '';
@@ -2015,24 +1852,24 @@
             }
             
             row.innerHTML = `
-                <td>${report.number}</td>
-                <td>${report.regionalDelegation}</td>
-                <td>${report.month}</td>
-                <td>${report.inspector}</td>
-                <td>${report.employeeId}</td>
-                <td>${report.mosqueName}</td>
-                <td>${report.infoCode}</td>
-                <td>${report.community}</td>
-                <td>${report.visitDate}</td>
-                <td>${report.visitTopic}</td>
-                <td>${report.notes}</td>
+                <td>${report.number || ''}</td>
+                <td>${report.regionalDelegation || ''}</td>
+                <td>${report.month || ''}</td>
+                <td>${report.inspector || ''}</td>
+                <td>${report.employeeId || ''}</td>
+                <td>${report.mosqueName || ''}</td>
+                <td>${report.infoCode || ''}</td>
+                <td>${report.community || ''}</td>
+                <td>${report.visitDate || ''}</td>
+                <td>${report.visitTopic || ''}</td>
+                <td>${report.notes || ''}</td>
                 <td>${report.actions || 'لا يوجد'}</td>
                 <td>${attachmentHtml}</td>
                 <td class="action-cell">
-                    <button class="action-btn edit-btn" onclick="editReport(${report.id})">
+                    <button class="action-btn edit-btn" onclick="editReport('${report.id || ''}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="action-btn delete-btn" onclick="confirmDeleteReport(${report.id})">
+                    <button class="action-btn delete-btn" onclick="confirmDeleteReport('${report.id || ''}')">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -2045,34 +1882,38 @@
             const report = reports.find(r => r.id === id);
             if (!report) return;
             
-            // التحقق من الصلاحيات
             if (userRole !== 'admin' && report.createdBy !== currentUser) {
                 showNotification('لا يمكنك تعديل تقارير المستخدمين الآخرين', true);
                 return;
             }
             
-            // ملء النموذج
-            document.getElementById('number').value = report.number;
-            document.getElementById('month').value = report.month;
-            document.getElementById('inspector').value = report.inspector;
-            document.getElementById('employee-id').value = report.employeeId;
-            document.getElementById('mosque-name').value = report.mosqueName;
-            document.getElementById('info-code').value = report.infoCode;
-            document.getElementById('community').value = report.community;
-            document.getElementById('visit-date').value = report.visitDate;
-            document.getElementById('visit-topic').value = report.visitTopic;
-            document.getElementById('notes').value = report.notes;
-            document.getElementById('actions').value = report.actions || '';
-            document.getElementById('attachments').value = report.attachments || '';
+            const numberEl = document.getElementById('number');
+            const monthEl = document.getElementById('month');
+            const inspectorEl = document.getElementById('inspector');
+            const employeeIdEl = document.getElementById('employee-id');
+            const mosqueNameEl = document.getElementById('mosque-name');
+            const infoCodeEl = document.getElementById('info-code');
+            const communityEl = document.getElementById('community');
+            const visitDateEl = document.getElementById('visit-date');
+            const visitTopicEl = document.getElementById('visit-topic');
+            const notesEl = document.getElementById('notes');
+            const actionsEl = document.getElementById('actions');
+            const attachmentsEl = document.getElementById('attachments');
             
-            // حذف التقرير القديم
-            deleteReportById(id);
+            if (numberEl) numberEl.value = report.number || '';
+            if (monthEl) monthEl.value = report.month || '';
+            if (inspectorEl) inspectorEl.value = report.inspector || '';
+            if (employeeIdEl) employeeIdEl.value = report.employeeId || '';
+            if (mosqueNameEl) mosqueNameEl.value = report.mosqueName || '';
+            if (infoCodeEl) infoCodeEl.value = report.infoCode || '';
+            if (communityEl) communityEl.value = report.community || '';
+            if (visitDateEl) visitDateEl.value = report.visitDate || '';
+            if (visitTopicEl) visitTopicEl.value = report.visitTopic || '';
+            if (notesEl) notesEl.value = report.notes || '';
+            if (actionsEl) actionsEl.value = report.actions || '';
+            if (attachmentsEl) attachmentsEl.value = report.attachments || '';
             
-            announceUserActivity('edit_report', { 
-                mosqueName: report.mosqueName,
-                reportId: report.id 
-            });
-            
+            deleteReport(id, false);
             showNotification('يمكنك الآن تعديل التقرير وإعادة حفظه');
             formChanged = true;
         }
@@ -2081,7 +1922,6 @@
             const report = reports.find(r => r.id === id);
             if (!report) return;
             
-            // التحقق من الصلاحيات
             if (userRole !== 'admin' && report.createdBy !== currentUser) {
                 showNotification('لا يمكنك حذف تقارير المستخدمين الآخرين', true);
                 return;
@@ -2089,53 +1929,60 @@
             
             showConfirmation(
                 'حذف التقرير', 
-                `هل أنت متأكد من حذف تقرير ${report.mosqueName}؟`,
-                () => deleteReport(id)
+                `هل أنت متأكد من حذف تقرير ${report.mosqueName || ''}؟`,
+                () => deleteReport(id, true)
             );
         }
         
-        function deleteReport(id) {
-            updateSyncStatus('syncing');
+        async function deleteReport(id, showNotif = true) {
+            updateFirebaseStatus('syncing');
             
             const report = reports.find(r => r.id === id);
             
-            deleteReportById(id);
-            
-            announceUserActivity('delete_report', { 
-                mosqueName: report?.mosqueName,
-                reportId: id 
-            });
-            
-            updateSyncStatus('connected');
-            showNotification('تم حذف التقرير من جميع الأجهزة', false, 'sync');
-        }
-        
-        function deleteReportById(id) {
-            // حذف من التقارير المحلية
-            reports = reports.filter(r => r.id !== id);
-            localStorage.setItem('mosqueReports', JSON.stringify(reports));
-            
-            // حذف من التخزين المشترك
-            const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
-            const filteredShared = sharedReports.filter(r => r.id !== id);
-            localStorage.setItem('sharedReports', JSON.stringify(filteredShared));
-            
-            loadReports();
-            updateStats();
+            try {
+                if (firebaseReady) {
+                    const reportRef = window.firebase.ref(database, `reports/${id}`);
+                    await window.firebase.remove(reportRef);
+                } else {
+                    reports = reports.filter(r => r.id !== id);
+                    localStorage.setItem('mosqueReports', JSON.stringify(reports));
+                    loadReports();
+                    updateStats();
+                }
+                
+                if (showNotif) {
+                    await announceUserActivity('delete_report', { 
+                        mosqueName: report?.mosqueName 
+                    });
+                    showNotification('تم حذف التقرير من جميع الأجهزة', false, 'firebase');
+                }
+                
+                updateFirebaseStatus('connected');
+                
+            } catch (error) {
+                console.error('خطأ في حذف التقرير:', error);
+                showNotification('حدث خطأ أثناء حذف التقرير', true);
+                updateFirebaseStatus('error');
+            }
         }
         
         // ======== وظائف التصفية ========
         function filterByInspector() {
-            const inspector = document.getElementById('filter-inspector').value;
+            const filterInspector = document.getElementById('filter-inspector');
+            if (!filterInspector) return;
+            const inspector = filterInspector.value;
             currentFilter = inspector;
             autoFilterEnabled = false;
-            document.getElementById('currentFilterInfo').style.display = 'none';
+            const currentFilterInfo = document.getElementById('currentFilterInfo');
+            if (currentFilterInfo) currentFilterInfo.style.display = 'none';
             loadReports();
         }
         
         function filterByMonth() {
-            const month = document.getElementById('filter-month').value;
+            const filterMonth = document.getElementById('filter-month');
             const table = document.getElementById('reportsTable');
+            if (!filterMonth || !table) return;
+            const month = filterMonth.value;
             table.innerHTML = '';
             
             if (!month) {
@@ -2163,73 +2010,211 @@
         
         function removeFilter() {
             autoFilterEnabled = false;
-            document.getElementById('currentFilterInfo').style.display = 'none';
+            const currentFilterInfo = document.getElementById('currentFilterInfo');
+            if (currentFilterInfo) currentFilterInfo.style.display = 'none';
             currentFilter = '';
-            document.getElementById('filter-inspector').value = '';
-            document.getElementById('filter-month').value = '';
+            const filterInspector = document.getElementById('filter-inspector');
+            const filterMonth = document.getElementById('filter-month');
+            if (filterInspector) filterInspector.value = '';
+            if (filterMonth) filterMonth.value = '';
             loadReports();
         }
         
-        // ======== وظائف إضافية للجوال ========
-        function checkMobileView() {
-            if (window.innerWidth <= 767) {
-                mobileTabs.style.display = 'flex';
-                document.getElementById('formTab').classList.add('active');
-                document.getElementById('reportsTab').classList.remove('active');
-            } else {
-                mobileTabs.style.display = 'none';
-                document.getElementById('formTab').classList.add('active');
-                document.getElementById('reportsTab').classList.add('active');
+        // ======== وظائف مساعدة ========
+        function updateStats() {
+            const totalReportsEl = document.getElementById('total-reports');
+            const thisMonthEl = document.getElementById('this-month');
+            const pendingActionsEl = document.getElementById('pending-actions');
+            const completedEl = document.getElementById('completed');
+            if (!totalReportsEl || !thisMonthEl || !pendingActionsEl || !completedEl) return;
+            
+            totalReportsEl.textContent = reports.length;
+            
+            const currentMonth = new Date().toLocaleString('ar-EG', { month: 'long' });
+            const thisMonthCount = reports.filter(report => report.month === currentMonth).length;
+            thisMonthEl.textContent = thisMonthCount;
+            
+            const pendingCount = reports.filter(report => !report.actions || report.actions.trim() === '').length;
+            pendingActionsEl.textContent = pendingCount;
+            
+            const completedCount = reports.length - pendingCount;
+            completedEl.textContent = completedCount;
+        }
+        
+        function setCurrentDate() {
+            const visitDateEl = document.getElementById('visit-date');
+            if (visitDateEl) {
+                const today = new Date();
+                const formattedDate = today.toISOString().substr(0, 10);
+                visitDateEl.value = formattedDate;
             }
         }
         
-        function switchMobileTab(tabName) {
-            document.querySelectorAll('.mobile-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
+        function checkSavedSession() {
+            const savedUser = sessionStorage.getItem('currentUser');
+            const savedRole = sessionStorage.getItem('userRole');
             
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            document.querySelector(`.mobile-tab:nth-child(${tabName === 'form' ? 1 : 2})`).classList.add('active');
-            document.getElementById(`${tabName}Tab`).classList.add('active');
+            if (savedUser && savedRole) {
+                currentUser = savedUser;
+                userRole = savedRole;
+                // تحقق من جاهزية DOM
+                if (document.readyState === 'complete') {
+                    showAppContent();
+                    if (firebaseReady) {
+                        addUserToOnlineList();
+                    }
+                } else {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        showAppContent();
+                        if (firebaseReady) {
+                            addUserToOnlineList();
+                        }
+                    }, { once: true });
+                }
+            }
         }
         
-        // ======== وظائف الإشعارات والعرض ========
+        function highlightNewRecords(newReports) {
+            setTimeout(() => {
+                newReports.forEach(report => {
+                    const rows = document.querySelectorAll('#reportsTable tr');
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length > 0 && cells[0].textContent.trim() === (report.number || '').toString().trim()) {
+                            row.classList.add('new-record');
+                            setTimeout(() => {
+                                row.classList.remove('new-record');
+                            }, 3000);
+                        }
+                    });
+                });
+            }, 500);
+        }
+        
+        // ======== وظائف Firebase ========
+        function updateFirebaseStatus(status) {
+            const connectionDot = document.getElementById('connectionDot');
+            const connectionText = document.getElementById('connectionText');
+            if (!syncStatus) return;
+            
+            syncStatus.className = 'sync-status';
+            if (connectionDot) connectionDot.className = 'connection-dot';
+            
+            switch(status) {
+                case 'connected':
+                    syncStatus.innerHTML = '<i class="fas fa-database"></i><span>متصل بـ Firebase</span>';
+                    if (connectionText) connectionText.textContent = 'متصل بـ Firebase';
+                    break;
+                case 'syncing':
+                    syncStatus.classList.add('syncing');
+                    syncStatus.innerHTML = '<i class="fas fa-sync-alt"></i><span>جاري المزامنة</span>';
+                    break;
+                case 'connecting':
+                    syncStatus.classList.add('connecting');
+                    if (connectionDot) connectionDot.classList.add('connecting');
+                    syncStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>جاري الاتصال</span>';
+                    if (connectionText) connectionText.textContent = 'جاري الاتصال بـ Firebase...';
+                    break;
+                case 'disconnected':
+                    syncStatus.classList.add('disconnected');
+                    if (connectionDot) connectionDot.classList.add('disconnected');
+                    syncStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>غير متصل</span>';
+                    if (connectionText) connectionText.textContent = 'غير متصل بـ Firebase';
+                    break;
+                case 'error':
+                    syncStatus.classList.add('disconnected');
+                    if (connectionDot) connectionDot.classList.add('disconnected');
+                    syncStatus.innerHTML = '<i class="fas fa-times-circle"></i><span>خطأ في الاتصال</span>';
+                    if (connectionText) connectionText.textContent = 'خطأ في الاتصال بـ Firebase';
+                    break;
+            }
+        }
+        
+        async function testFirebaseConnection() {
+            updateFirebaseStatus('connecting');
+            
+            try {
+                if (!firebaseReady) {
+                    throw new Error('Firebase غير جاهز');
+                }
+                
+                // اختبار الكتابة والقراءة
+                const testRef = window.firebase.ref(database, 'test');
+                await window.firebase.set(testRef, { timestamp: Date.now() });
+                await window.firebase.remove(testRef);
+                
+                updateFirebaseStatus('connected');
+                showNotification('تم اختبار الاتصال بـ Firebase بنجاح!', false, 'firebase');
+                
+            } catch (error) {
+                console.error('فشل اختبار الاتصال:', error);
+                updateFirebaseStatus('error');
+                showNotification('فشل في الاتصال بـ Firebase: ' + error.message, true, 'firebase');
+            }
+        }
+        
+        function showOnlineUsers() {
+            const panel = document.getElementById('onlineUsers');
+            if (panel) {
+                panel.classList.toggle('show');
+                setTimeout(() => {
+                    panel.classList.remove('show');
+                }, 5000);
+            }
+        }
+        
+        // ======== وظائف العرض والإشعارات ========
         function showNotification(message, isError = false, type = 'normal') {
+            if (!notificationText || !notification) return;
             notificationText.textContent = message;
-            notification.classList.remove('error', 'sync');
+            notification.classList.remove('error', 'firebase');
             
             if (isError) {
                 notification.classList.add('error');
-            } else if (type === 'sync') {
-                notification.classList.add('sync');
+            } else if (type === 'firebase') {
+                notification.classList.add('firebase');
             }
             
             notification.classList.add('show');
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 3000);
+            }, 4000);
         }
         
         function showConfirmation(title, message, callback) {
-            document.getElementById('confirmationTitle').textContent = title;
-            document.getElementById('confirmationMessage').textContent = message;
-            document.getElementById('confirmationModal').style.display = 'flex';
+            const confirmationTitle = document.getElementById('confirmationTitle');
+            const confirmationMessage = document.getElementById('confirmationMessage');
+            const confirmationModal = document.getElementById('confirmationModal');
+            const confirmAction = document.getElementById('confirmAction');
+            if (!confirmationTitle || !confirmationMessage || !confirmationModal || !confirmAction) return;
             
-            document.getElementById('confirmAction').onclick = function() {
+            confirmationTitle.textContent = title;
+            confirmationMessage.textContent = message;
+            confirmationModal.style.display = 'flex';
+            
+            confirmAction.onclick = function() {
                 callback();
                 hideConfirmation();
             };
         }
         
         function hideConfirmation() {
-            document.getElementById('confirmationModal').style.display = 'none';
+            const confirmationModal = document.getElementById('confirmationModal');
+            if (confirmationModal) confirmationModal.style.display = 'none';
         }
         
-        function showClearAllConfirmation() {
+        function showLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }
+        
+        async function showClearAllConfirmation() {
             if (userRole !== 'admin') {
                 showNotification('هذه العملية متاحة للمدير فقط', true);
                 return;
@@ -2242,41 +2227,49 @@
             );
         }
         
-        function clearAllData() {
-            updateSyncStatus('syncing');
+        async function clearAllData() {
+            updateFirebaseStatus('syncing');
             
-            reports = [];
-            localStorage.setItem('mosqueReports', JSON.stringify([]));
-            localStorage.setItem('sharedReports', JSON.stringify([]));
-            
-            loadReports();
-            updateStats();
-            
-            announceUserActivity('clear_all');
-            
-            updateSyncStatus('connected');
-            showNotification('تم مسح جميع البيانات من جميع الأجهزة', false, 'sync');
+            try {
+                if (firebaseReady) {
+                    await window.firebase.remove(reportsRef);
+                    showNotification('تم مسح جميع البيانات من Firebase', false, 'firebase');
+                } else {
+                    reports = [];
+                    localStorage.setItem('mosqueReports', JSON.stringify([]));
+                    loadReports();
+                    updateStats();
+                    showNotification('تم مسح جميع البيانات المحلية', false);
+                }
+                
+                await announceUserActivity('clear_all');
+                updateFirebaseStatus('connected');
+                
+            } catch (error) {
+                console.error('خطأ في مسح البيانات:', error);
+                showNotification('حدث خطأ أثناء مسح البيانات', true);
+                updateFirebaseStatus('error');
+            }
         }
         
-        function refreshData() {
-            updateSyncStatus('syncing');
+        async function refreshData() {
+            updateFirebaseStatus('syncing');
             
-            // فرض إعادة تحميل البيانات من التخزين المشترك
-            const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
-            reports = [...sharedReports];
-            localStorage.setItem('mosqueReports', JSON.stringify(reports));
-            
-            console.log('تم إعادة تحميل البيانات:', reports.length, 'تقارير');
-            
-            setTimeout(() => {
+            if (firebaseReady) {
+                // البيانات تتحدث تلقائياً مع Firebase
+                showNotification('البيانات محدثة تلقائياً مع Firebase', false, 'firebase');
+            } else {
+                // تحديث من التخزين المحلي
+                reports = JSON.parse(localStorage.getItem('mosqueReports') || '[]');
                 loadReports();
                 updateStats();
-                updateSyncStatus('connected');
-                showNotification(`تم تحديث البيانات - عدد التقارير: ${reports.length}`);
-            }, 1000);
+                showNotification('تم تحديث البيانات المحلية');
+            }
+            
+            updateFirebaseStatus('connected');
         }
         
-        function downloadExcel() {
+        async function downloadExcel() {
             if (userRole !== 'admin') {
                 showNotification('عملية التحميل متاحة للمدير فقط', true);
                 return;
@@ -2290,7 +2283,6 @@
             try {
                 const workbook = XLSX.utils.book_new();
                 
-                // تجميع التقارير حسب المتفقد
                 const inspectorReports = {};
                 reports.forEach(report => {
                     if (!inspectorReports[report.inspector]) {
@@ -2298,30 +2290,28 @@
                     }
                     
                     inspectorReports[report.inspector].push({
-                        'ر.ت': report.number,
-                        'المندوبية الإقليمية': report.regionalDelegation,
-                        'الشهر': report.month,
-                        'إسم المتفقد': report.inspector,
-                        'ر.ب.و.ت': report.employeeId,
-                        'اسم المسجد': report.mosqueName,
-                        'رمزه المعلوماتي': report.infoCode,
-                        'اسم الجماعة': report.community,
-                        'تاريخ الزيارة': report.visitDate,
-                        'موضوع الزيارة': report.visitTopic,
-                        'الملاحظات': report.notes,
+                        'ر.ت': report.number || '',
+                        'المندوبية الإقليمية': report.regionalDelegation || '',
+                        'الشهر': report.month || '',
+                        'إسم المتفقد': report.inspector || '',
+                        'ر.ب.و.ت': report.employeeId || '',
+                        'اسم المسجد': report.mosqueName || '',
+                        'رمزه المعلوماتي': report.infoCode || '',
+                        'اسم الجماعة': report.community || '',
+                        'تاريخ الزيارة': report.visitDate || '',
+                        'موضوع الزيارة': report.visitTopic || '',
+                        'الملاحظات': report.notes || '',
                         'الإجراءات': report.actions || '',
                         'المرفقات': report.attachments || ''
                     });
                 });
                 
-                // إنشاء ورقة لكل متفقد
                 Object.keys(inspectorReports).forEach(inspector => {
                     const worksheet = XLSX.utils.json_to_sheet(inspectorReports[inspector]);
                     XLSX.utils.book_append_sheet(workbook, worksheet, inspector.substring(0, 30));
                 });
                 
-                // تحميل الملف
-                const fileName = `تقارير_المساجد_${new Date().toISOString().split('T')[0]}.xlsx`;
+                const fileName = `تقارير_المساجد_Firebase_${new Date().toISOString().split('T')[0]}.xlsx`;
                 XLSX.writeFile(workbook, fileName);
                 
                 showNotification('تم تحميل ملف Excel بنجاح');
@@ -2332,54 +2322,23 @@
             }
         }
         
-        // ======== وظائف مساعدة ========
-        function updateStats() {
-            document.getElementById('total-reports').textContent = reports.length;
-            
-            const currentMonth = new Date().toLocaleString('ar-EG', { month: 'long' });
-            const thisMonthCount = reports.filter(report => report.month === currentMonth).length;
-            document.getElementById('this-month').textContent = thisMonthCount;
-            
-            const pendingCount = reports.filter(report => !report.actions || report.actions.trim() === '').length;
-            document.getElementById('pending-actions').textContent = pendingCount;
-            
-            const completedCount = reports.length - pendingCount;
-            document.getElementById('completed').textContent = completedCount;
-        }
-        
-        function setCurrentDate() {
-            const today = new Date();
-            const formattedDate = today.toISOString().substr(0, 10);
-            document.getElementById('visit-date').value = formattedDate;
-        }
-        
-        function checkSavedSession() {
-            const savedUser = sessionStorage.getItem('currentUser');
-            const savedRole = sessionStorage.getItem('userRole');
-            
-            if (savedUser && savedRole) {
-                currentUser = savedUser;
-                userRole = savedRole;
-                showAppContent();
-            }
-        }
-        
+        // ======== إعداد مستمعي الأحداث ========
         function setupEventListeners() {
-            // دعم Enter للدخول
-            document.getElementById('password').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    login();
-                }
-            });
+            const passwordEl = document.getElementById('password');
+            if (passwordEl) {
+                passwordEl.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        login();
+                    }
+                });
+            }
             
-            // تتبع تغييرات النموذج
             const formInputs = document.querySelectorAll('input, select, textarea');
             formInputs.forEach(input => {
                 input.addEventListener('input', () => { formChanged = true; });
                 input.addEventListener('change', () => { formChanged = true; });
             });
             
-            // تحذير عند إغلاق الصفحة
             window.addEventListener('beforeunload', function(e) {
                 if (formChanged) {
                     e.preventDefault();
@@ -2387,34 +2346,14 @@
                 }
             });
             
-            // الاستماع لأنشطة المستخدمين
-            window.addEventListener('userActivity', function(e) {
-                if (e.detail.user !== currentUser) {
-                    showUserActivity(e.detail);
-                }
-            });
-            
-            // مراقبة حجم الشاشة للتبديل بين وضع الجوال
-            window.addEventListener('resize', checkMobileView);
-            
-            // تنظيف عند إغلاق الصفحة
-            window.addEventListener('beforeunload', function() {
-                if (currentUser) {
-                    announceUserActivity('logout');
+            window.addEventListener('beforeunload', async function() {
+                if (currentUser && firebaseReady && userId) {
+                    await announceUserActivity('logout');
+                    const userRef = window.firebase.ref(database, `onlineUsers/${userId}`);
+                    await window.firebase.remove(userRef);
                 }
             });
         }
-        
-        // بدء النظام عند تحميل الصفحة
-        window.addEventListener('load', function() {
-            // محاكاة بدء الاتصال
-            setTimeout(() => {
-                if (currentUser) {
-                    updateSyncStatus('connected');
-                }
-            }, 2000);
-        });
-        
     </script>
 </body>
 </html>
