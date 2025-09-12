@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تقارير الزيارات التفقدية للمساجد</title>
+    <title>نظام تقارير الزيارات التفقدية للمساجد - مع المزامنة الفورية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -16,6 +16,7 @@
             --success-color: #27ae60;
             --warning-color: #f39c12;
             --table-header: #3498db;
+            --sync-color: #00d4aa;
         }
         
         * {
@@ -255,6 +256,26 @@
             background-color: #e8f4fc;
         }
         
+        .data-table tr.new-record {
+            animation: highlightNew 2s ease-in-out;
+            background-color: #d4edda !important;
+        }
+        
+        .data-table tr.updated-record {
+            animation: highlightUpdate 2s ease-in-out;
+            background-color: #fff3cd !important;
+        }
+        
+        @keyframes highlightNew {
+            0% { background-color: #28a745; }
+            100% { background-color: #d4edda; }
+        }
+        
+        @keyframes highlightUpdate {
+            0% { background-color: #ffc107; }
+            100% { background-color: #fff3cd; }
+        }
+        
         .action-cell {
             display: flex;
             gap: 6px;
@@ -356,6 +377,10 @@
             background-color: var(--accent-color);
         }
         
+        .notification.sync {
+            background-color: var(--sync-color);
+        }
+        
         .filter-section {
             display: flex;
             gap: 10px;
@@ -368,98 +393,7 @@
             min-width: 200px;
         }
         
-        .excel-status {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 15px;
-            border: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .excel-status i {
-            color: var(--success-color);
-            font-size: 20px;
-        }
-        
-        .sync-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--success-color);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-        
-        .sync-status.syncing i {
-            animation: spin 1.5s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* تحسينات للشاشات المتوسطة والكبيرة */
-        @media (min-width: 768px) {
-            .container {
-                max-width: 95%;
-            }
-            
-            header {
-                padding: 25px 20px;
-            }
-            
-            header h1 {
-                font-size: 24px;
-            }
-            
-            header p {
-                font-size: 15px;
-            }
-            
-            .app-content {
-                flex-direction: row;
-                padding: 20px;
-            }
-            
-            .form-section {
-                flex: 1;
-            }
-            
-            .table-section {
-                flex: 2;
-            }
-            
-            .form-row {
-                flex-direction: row;
-            }
-            
-            .actions {
-                flex-direction: row;
-            }
-        }
-        
-        @media (min-width: 992px) {
-            .container {
-                max-width: 1200px;
-            }
-            
-            header h1 {
-                font-size: 26px;
-            }
-        }
-
-        /* أنماط جديدة لنظام تسجيل الدخول */
+        /* قسم تسجيل الدخول */
         .login-section {
             background-color: white;
             padding: 20px;
@@ -547,49 +481,238 @@
             line-height: 1.5;
         }
         
-        /* تحسينات للشاشات الصغيرة */
-        @media (max-width: 480px) {
-            .header-content h1 {
-                font-size: 18px;
+        /* حالة المزامنة المحسنة */
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--sync-color);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,212,170,0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .sync-status.connecting {
+            background-color: var(--warning-color);
+            box-shadow: 0 4px 15px rgba(243,156,18,0.3);
+        }
+        
+        .sync-status.disconnected {
+            background-color: var(--accent-color);
+            box-shadow: 0 4px 15px rgba(231,76,60,0.3);
+        }
+        
+        .sync-status.syncing i {
+            animation: spin 1.5s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* مؤشر المستخدمين المتصلين */
+        .online-users {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 15px;
+            min-width: 200px;
+            z-index: 999;
+            display: none;
+        }
+        
+        .online-users.show {
+            display: block;
+        }
+        
+        .online-users h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            font-size: 13px;
+        }
+        
+        .user-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+        }
+        
+        .user-status.idle {
+            background-color: var(--warning-color);
+        }
+        
+        .user-status.offline {
+            background-color: #95a5a6;
+        }
+        
+        /* مؤشر النشاط الفورية */
+        .activity-indicator {
+            position: fixed;
+            top: 130px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .activity-indicator.show {
+            transform: translateX(0);
+        }
+        
+        /* مؤشر التحديث المباشر */
+        .live-update-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--sync-color);
+            margin-left: 10px;
+        }
+        
+        .live-update-indicator .pulse {
+            width: 8px;
+            height: 8px;
+            background-color: var(--sync-color);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+        
+        /* وضع الاتصال */
+        .connection-status {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .connection-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .connection-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+        }
+        
+        .connection-dot.connecting {
+            background-color: var(--warning-color);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .connection-dot.disconnected {
+            background-color: var(--accent-color);
+        }
+        
+        .sync-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .sync-toggle {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        
+        .sync-toggle.disabled {
+            background-color: #95a5a6;
+        }
+        
+        /* تحسينات للشاشات المتوسطة والكبيرة */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 95%;
             }
             
-            .header-content p {
-                font-size: 12px;
+            .app-content {
+                flex-direction: row;
+                padding: 20px;
             }
             
-            .section-title {
-                font-size: 18px;
+            .form-section {
+                flex: 1;
             }
             
-            .form-group label, 
-            .form-group input, 
-            .form-group select, 
-            .form-group textarea {
-                font-size: 13px;
+            .table-section {
+                flex: 2;
             }
             
-            .btn {
-                font-size: 13px;
-                padding: 8px 12px;
+            .form-row {
+                flex-direction: row;
             }
             
-            .stat-card {
-                min-width: 100px;
-                padding: 10px;
-            }
-            
-            .stat-number {
-                font-size: 16px;
-            }
-            
-            .user-info {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
+            .actions {
+                flex-direction: row;
             }
         }
         
-        /* نمط مربع الحوار للتأكيد */
+        /* أنماط إضافية */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
         .confirmation-modal {
             display: none;
             position: fixed;
@@ -620,7 +743,6 @@
             margin-top: 20px;
         }
         
-        /* فلتر التقرير الحالي */
         .current-filter {
             background-color: #e8f4fc;
             padding: 10px 15px;
@@ -646,7 +768,6 @@
             font-size: 12px;
         }
         
-        /* تحسينات جديدة */
         .form-error {
             color: var(--accent-color);
             font-size: 12px;
@@ -659,74 +780,145 @@
         .form-group.error textarea {
             border-color: var(--accent-color);
         }
-        
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            z-index: 3000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        .mobile-optimized {
-            display: flex;
-            flex-direction: column;
-        }
-        
+
+        /* تحسينات للجوال */
         @media (max-width: 767px) {
-            .mobile-optimized .form-row {
+            header {
+                flex-direction: column;
+                text-align: center;
+                padding: 15px 10px;
+            }
+            
+            .header-content {
+                margin-top: 10px;
+            }
+            
+            header h1 {
+                font-size: 18px;
+            }
+            
+            .form-section, .table-section {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 18px;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .connection-status {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .sync-controls {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .stats {
+                gap: 8px;
+            }
+            
+            .stat-card {
+                min-width: calc(50% - 8px);
+                padding: 10px;
+            }
+            
+            .stat-number {
+                font-size: 16px;
+            }
+            
+            .filter-section {
                 flex-direction: column;
             }
             
-            .mobile-optimized .actions {
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .actions {
                 flex-direction: column;
             }
             
-            .mobile-optimized .filter-section {
+            .btn {
+                width: 100%;
+            }
+            
+            .data-table th, 
+            .data-table td {
+                padding: 8px 6px;
+                font-size: 12px;
+            }
+            
+            .action-cell {
                 flex-direction: column;
+                gap: 4px;
+            }
+            
+            .action-btn {
+                width: 100%;
+                padding: 6px;
+            }
+            
+            .online-users {
+                left: 20px;
+                right: 20px;
+                min-width: unset;
+            }
+            
+            .sync-status {
+                left: 20px;
+                right: 20px;
+                bottom: 70px;
+                justify-content: center;
             }
         }
-        
-        /* مؤشر التحديث التلقائي */
-        .live-update-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-            color: var(--success-color);
-            margin-left: 10px;
+
+        /* تحسينات إضافية للجوال */
+        .mobile-tabs {
+            display: none;
         }
-        
-        .live-update-indicator .pulse {
-            width: 8px;
-            height: 8px;
-            background-color: var(--success-color);
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.7; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.7; }
+
+        @media (max-width: 767px) {
+            .mobile-tabs {
+                display: flex;
+                margin-bottom: 15px;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            .mobile-tab {
+                flex: 1;
+                text-align: center;
+                padding: 10px;
+                background: #f8f9fa;
+                cursor: pointer;
+                border-bottom: 3px solid transparent;
+            }
+            
+            .mobile-tab.active {
+                border-bottom-color: var(--primary-color);
+                background: white;
+                font-weight: bold;
+            }
+            
+            .content-section {
+                display: none;
+            }
+            
+            .content-section.active {
+                display: block;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- مؤشر التحميل -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
     </div>
@@ -738,7 +930,7 @@
                     <i class="fas fa-mosque"></i>
                 </div>
                 <div class="header-content">
-                    <h1>تقارير الزيارات التفقدية للمساجد <span class="live-update-indicator" id="liveUpdateIndicator"><span class="pulse"></span> متصل</span></h1>
+                    <h1>تقارير الزيارات التفقدية للمساجد <span class="live-update-indicator" id="liveUpdateIndicator"><span class="pulse"></span> متزامن</span></h1>
                     <p>المندوبية الإقليمية للشؤون الإسلامية - مكناس</p>
                 </div>
             </div>
@@ -747,11 +939,6 @@
         <!-- قسم تسجيل الدخول -->
         <div id="loginSection" class="login-section">
             <h2 class="section-title">تسجيل الدخول</h2>
-            
-            <div class="notification" id="notification">
-                <i class="fas fa-exclamation-circle"></i>
-                <span id="notification-text"></span>
-            </div>
             
             <div class="user-type">
                 <div class="user-type-btn active" id="btn-inspector" onclick="setUserType('inspector')">متفقد</div>
@@ -806,6 +993,33 @@
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
             </button>
         </div>
+
+        <!-- معلومات الاتصال -->
+        <div id="connectionStatus" class="connection-status" style="display: none;">
+            <div class="connection-info">
+                <div class="connection-dot" id="connectionDot"></div>
+                <span id="connectionText">متصل بالخادم</span>
+                <span id="onlineUsersCount">(0 مستخدمين متصلين)</span>
+            </div>
+            <div class="sync-controls">
+                <button class="sync-toggle" id="syncToggle" onclick="toggleSync()">إيقاف المزامنة</button>
+                <button class="sync-toggle" onclick="showOnlineUsers()">المستخدمين المتصلين</button>
+            </div>
+        </div>
+
+        <!-- المستخدمين المتصلين -->
+        <div class="online-users" id="onlineUsers">
+            <h4>المستخدمين المتصلين</h4>
+            <div id="usersList">
+                <!-- سيتم ملؤها بالبيانات -->
+            </div>
+        </div>
+
+        <!-- مؤشر النشاط -->
+        <div class="activity-indicator" id="activityIndicator">
+            <i class="fas fa-user-edit"></i>
+            <span id="activityText">يقوم أحمد بإضافة تقرير جديد</span>
+        </div>
         
         <div class="stats" style="display: none;">
             <div class="stat-card">
@@ -825,9 +1039,15 @@
                 <div class="stat-title">مكتملة</div>
             </div>
         </div>
+
+        <!-- علامات التبويب للجوال -->
+        <div class="mobile-tabs" id="mobileTabs" style="display: none;">
+            <div class="mobile-tab active" onclick="switchMobileTab('form')">النموذج</div>
+            <div class="mobile-tab" onclick="switchMobileTab('reports')">التقارير</div>
+        </div>
         
-        <div class="app-content mobile-optimized" style="display: none;">
-            <div class="form-section">
+        <div class="app-content" style="display: none;">
+            <div class="form-section content-section active" id="formTab">
                 <h2 class="section-title">استمارة تفقدية للمساجد</h2>
                 
                 <div class="form-row">
@@ -984,14 +1204,9 @@
                         <i class="fas fa-eraser"></i> مسح النموذج
                     </button>
                 </div>
-                
-                <div class="excel-status">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>يتم تحديث البيانات</span>
-                </div>
             </div>
             
-            <div class="table-section">
+            <div class="table-section content-section" id="reportsTab">
                 <h2 class="section-title">التقارير المسجلة</h2>
                 
                 <!-- فلتر التقرير الحالي -->
@@ -1000,7 +1215,7 @@
                     <button class="remove-filter" onclick="removeFilter()">إلغاء التصفية</button>
                 </div>
                 
-                <div class="filter-section mobile-optimized">
+                <div class="filter-section">
                     <div class="filter-group">
                         <label for="filter-inspector">تصفية حسب المتفقد:</label>
                         <select id="filter-inspector" onchange="filterByInspector()">
@@ -1013,7 +1228,7 @@
                             <option value="ناصفي فؤاد">ناصفي فؤاد</option>
                             <option value="راجعي خالد">راجعي خالد</option>
                             <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
-                            <option value="اليوسفي ياسين">اليوسفي ياسين</option>
+                            <option value="اليوسфи ياسين">اليوسفي ياسين</option>
                             <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
                         </select>
                     </div>
@@ -1064,14 +1279,13 @@
                     </table>
                 </div>
                 
-                <div class="actions mobile-optimized" style="margin-top: 15px;">
+                <div class="actions" style="margin-top: 15px;">
                     <button class="btn btn-primary" onclick="refreshData()">
                         <i class="fas fa-sync-alt"></i> تحديث البيانات
                     </button>
                     <button class="btn btn-danger admin-only" id="clearAllBtn" onclick="showClearAllConfirmation()">
                         <i class="fas fa-trash"></i> مسح الكل
                     </button>
-                    <!-- زر التحميل للمدير فقط -->
                     <button class="btn btn-primary admin-only" id="excelDownloadBtn" onclick="downloadExcel()">
                         <i class="fas fa-download"></i> تحميل Excel
                     </button>
@@ -1088,7 +1302,7 @@
     <div class="confirmation-modal" id="confirmationModal">
         <div class="confirmation-content">
             <h3 id="confirmationTitle">تأكيد الإجراء</h3>
-            <p id="confirmationMessage">هل أنت متأكد من أنك تريد تنفيذ هذا الإجراء?</p>
+            <p id="confirmationMessage">هل أنت متأكد من أنك تريد تنفيذ هذا الإجراء؟</p>
             <div class="confirmation-buttons">
                 <button class="btn btn-danger" id="confirmAction">نعم</button>
                 <button class="btn btn-primary" onclick="hideConfirmation()">إلغاء</button>
@@ -1096,150 +1310,94 @@
         </div>
     </div>
 
-    <div class="notification" id="main-notification">
+    <!-- الإشعارات -->
+    <div class="notification" id="notification">
         <i class="fas fa-check-circle"></i>
-        <span id="notification-main-text"></span>
+        <span id="notification-text"></span>
     </div>
 
+    <!-- حالة المزامنة -->
     <div class="sync-status" id="syncStatus">
-        <i class="fas fa-check-circle"></i>
-        <span>مفعَّل</span>
+        <i class="fas fa-wifi"></i>
+        <span>متصل</span>
     </div>
 
     <script>
-        // بيانات التخزين المحلي
-        let reports = [];
-        let currentFilter = '';
-        let excelData = {};
-        let excelBlob = null;
+        // ======== متغيرات النظام ========
+        let reports = JSON.parse(localStorage.getItem('mosqueReports')) || [];
         let currentUser = null;
         let userRole = null;
         let userType = 'inspector';
+        let currentFilter = '';
         let autoFilterEnabled = true;
         let formChanged = false;
-        let lastUpdateTime = 0;
-        let syncInterval = null;
+        let syncEnabled = true;
+        let onlineUsers = new Map();
+        let lastSyncTime = Date.now();
         
-        // عناصر DOM
-        const mainNotification = document.getElementById('main-notification');
-        const notificationText = document.getElementById('notification-main-text');
+        // متغيرات المزامنة الفورية
+        let syncInterval = null;
+        let heartbeatInterval = null;
+        let activityTimeout = null;
+        
+        // ======== عناصر DOM ========
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
         const syncStatus = document.getElementById('syncStatus');
         const loginSection = document.getElementById('loginSection');
         const userInfo = document.getElementById('userInfo');
-        const currentUserSpan = document.getElementById('currentUser');
-        const userRoleSpan = document.getElementById('userRole');
-        const excelDownloadBtn = document.getElementById('excelDownloadBtn');
-        const clearAllBtn = document.getElementById('clearAllBtn');
-        const statsSection = document.querySelector('.stats');
-        const appContent = document.querySelector('.app-content');
-        const footer = document.querySelector('footer');
-        const confirmationModal = document.getElementById('confirmationModal');
-        const confirmationTitle = document.getElementById('confirmationTitle');
-        const confirmationMessage = document.getElementById('confirmationMessage');
-        const confirmActionBtn = document.getElementById('confirmAction');
-        const passwordToggle = document.getElementById('passwordToggle');
-        const currentFilterInfo = document.getElementById('currentFilterInfo');
-        const filterText = document.getElementById('filterText');
-        const loadingOverlay = document.getElementById('loadingOverlay');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const onlineUsersPanel = document.getElementById('onlineUsers');
+        const activityIndicator = document.getElementById('activityIndicator');
         const liveUpdateIndicator = document.getElementById('liveUpdateIndicator');
+        const mobileTabs = document.getElementById('mobileTabs');
         
-        // تهيئة الصفحة
+        // ======== تهيئة النظام ========
         document.addEventListener('DOMContentLoaded', function() {
-            // التحقق من وجود مستخدم مسجل مسبقاً في الجلسة
-            const savedUser = sessionStorage.getItem('currentUser');
-            const savedRole = sessionStorage.getItem('userRole');
-            
-            if (savedUser && savedRole) {
-                currentUser = savedUser;
-                userRole = savedRole;
-                showAppContent();
-            }
-            
-            // تحميل البيانات الأولية
+            checkSavedSession();
             loadReports();
             updateStats();
             setCurrentDate();
-            loadExcelData();
-            updateExcelFile();
-            
-            // دعم الضغط على Enter لتسجيل الدخول
-            document.getElementById('password').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    login();
-                }
-            });
-            
-            // تتبع تغييرات النموذج
-            trackFormChanges();
-            
-            // التحذير عند محاولة إغلاق الصفحة مع وجود تغييرات غير محفوظة
-            window.addEventListener('beforeunload', function(e) {
-                if (formChanged) {
-                    e.preventDefault();
-                    e.returnValue = 'لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ?';
-                }
-            });
-            
-            // بدء المزامنة التلقائية
-            startAutoSync();
+            setupEventListeners();
+            initializeRealTimeSync();
+            checkMobileView();
         });
         
-        // بدء المزامنة التلقائية
-        function startAutoSync() {
-            // التحقق من التحديثات كل 2 ثانية
-            syncInterval = setInterval(checkForUpdates, 2000);
-        }
-        
-        // إيقاف المزامنة التلقائية
-        function stopAutoSync() {
-            if (syncInterval) {
-                clearInterval(syncInterval);
-                syncInterval = null;
-                liveUpdateIndicator.style.display = 'none';
-            }
-        }
-        
-        // التحقق من وجود تحديثات جديدة
-        function checkForUpdates() {
-            const storedUpdateTime = parseInt(localStorage.getItem('mosqueReportsUpdateTime') || '0');
+        // ======== وظائف تسجيل الدخول ========
+        function setUserType(type) {
+            userType = type;
+            document.getElementById('btn-inspector').classList.toggle('active', type === 'inspector');
+            document.getElementById('btn-admin').classList.toggle('active', type === 'admin');
             
-            if (storedUpdateTime > lastUpdateTime) {
-                // هناك تحديثات جديدة
-                lastUpdateTime = storedUpdateTime;
-                loadReports();
-                updateStats();
-                updateExcelFile();
-                
-                if (userRole === 'admin') {
-                    showNotification('تم تحديث البيانات تلقائياً', false);
-                }
+            const usernameSelect = document.getElementById('username');
+            const usernameLabel = document.getElementById('username-label');
+            const adminInfo = document.getElementById('admin-info');
+            
+            if (type === 'admin') {
+                usernameLabel.textContent = 'اسم المدير';
+                usernameSelect.innerHTML = '<option value="العمراوي نورالدين">العمراوي نورالدين</option>';
+                adminInfo.style.display = 'block';
+            } else {
+                usernameLabel.textContent = 'اسم المتفقد';
+                usernameSelect.innerHTML = `
+                    <option value="">اختر اسم المتفقد</option>
+                    <option value="بنعيسى هويتر">بنعيسى هويتر</option>
+                    <option value="شهراوي محمد">شهراوي محمد</option>
+                    <option value="بنعكي محمد">بنعكي محمد</option>
+                    <option value="غزلان فؤاد">غزلان فؤاد</option>
+                    <option value="ناصفي فؤاد">ناصفي فؤاد</option>
+                    <option value="راجعي خالد">راجعي خالد</option>
+                    <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
+                    <option value="اليوسفي ياسين">اليوسفي ياسين</option>
+                    <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
+                `;
+                adminInfo.style.display = 'none';
             }
         }
         
-        // تحديث وقت التعديل الأخير
-        function updateLastModifiedTime() {
-            const now = new Date().getTime();
-            lastUpdateTime = now;
-            localStorage.setItem('mosqueReportsUpdateTime', now);
-        }
-        
-        // تتبع تغييرات النموذج
-        function trackFormChanges() {
-            const formInputs = document.querySelectorAll('input, select, textarea');
-            formInputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    formChanged = true;
-                });
-                input.addEventListener('change', function() {
-                    formChanged = true;
-                });
-            });
-        }
-        
-        // إظهار/إخفاء كلمة المرور
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
-            const eyeIcon = passwordToggle.querySelector('i');
+            const eyeIcon = document.getElementById('passwordToggle').querySelector('i');
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
@@ -1252,251 +1410,447 @@
             }
         }
         
-        // إظهار مؤشر التحميل
-        function showLoading() {
-            loadingOverlay.style.display = 'flex';
-        }
-        
-        // إخفاء مؤشر التحميل
-        function hideLoading() {
-            loadingOverlay.style.display = 'none';
-        }
-        
-        // إظهار مربع حوار التأكيد
-        function showConfirmation(title, message, callback) {
-            confirmationTitle.textContent = title;
-            confirmationMessage.textContent = message;
-            confirmationModal.style.display = 'flex';
-            
-            // إزالة أي معالج حدث سابق وإضافة المعالج الجديد
-            confirmActionBtn.onclick = function() {
-                callback();
-                hideConfirmation();
-            };
-        }
-        
-        // إخفاء مربع حوار التأكيد
-        function hideConfirmation() {
-            confirmationModal.style.display = 'none';
-        }
-        
-        // تأكيد مسح جميع البيانات
-        function showClearAllConfirmation() {
-            showConfirmation(
-                "مسح جميع البيانات", 
-                "هل أنت متأكد من أنك تريد مسح جميع البيانات? لا يمكن التراجع عن هذا الإجراء.", 
-                clearAllData
-            );
-        }
-        
-        // إزالة التصفية التلقائية
-        function removeFilter() {
-            autoFilterEnabled = false;
-            currentFilterInfo.style.display = 'none';
-            currentFilter = '';
-            loadReports();
-        }
-        
-        // تحديد نوع المستخدم
-        function setUserType(type) {
-            userType = type;
-            document.getElementById('btn-inspector').classList.toggle('active', type === 'inspector');
-            document.getElementById('btn-admin').classList.toggle('active', type === 'admin');
-            
-            if (type === 'admin') {
-                document.getElementById('username-label').textContent = 'اسم المدير';
-                document.getElementById('username').innerHTML = '<option value="العمراوي نورالدين">العمراوي نورالدين</option>';
-                document.getElementById('admin-info').style.display = 'block';
-            } else {
-                document.getElementById('username-label').textContent = 'اسم المتفقد';
-                document.getElementById('username').innerHTML = `
-                    <option value="">اختر اسم المتفقد</option>
-                    <option value="بنعيسى هويتر">بنعيسى هويتر</option>
-                    <option value="شهراوي محمد">شهراوي محمد</option>
-                    <option value="بنعكي محمد">بنعكي محمد</option>
-                    <option value="غزلان فؤاد">غزلان فؤاد</option>
-                    <option value="ناصفي فؤاد">ناصفي فؤاد</option>
-                    <option value="راجعي خالد">راجعي خالد</option>
-                    <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
-                    <option value="اليوسفي ياسين">اليوسفي ياسين</option>
-                    <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
-                `;
-                document.getElementById('admin-info').style.display = 'none';
-            }
-        }
-        
-        // إظهار إشعار في قسم التسجيل
-        function showLoginNotification(message, isError = false) {
-            const notification = document.getElementById('notification');
-            document.getElementById('notification-text').textContent = message;
-            
-            if (isError) {
-                notification.classList.add('error');
-            } else {
-                notification.classList.remove('error');
-            }
-            
-            notification.style.display = 'flex';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 5000);
-        }
-        
-        // تسجيل الدخول
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
             if (!username) {
-                showLoginNotification('يرجى اختيار اسم المستخدم', true);
+                showNotification('يرجى اختيار اسم المستخدم', true);
                 return;
             }
             
             if (!password) {
-                showLoginNotification('يرجى إدخال كلمة المرور', true);
+                showNotification('يرجى إدخال كلمة المرور', true);
                 return;
             }
             
+            // التحقق من بيانات الدخول
+            let loginValid = false;
+            
             if (userType === 'admin') {
-                // تحقق من بيانات المدير
-                if (username === 'العمراوي نورالدين' && password === 'admin2023') {
-                    // تخزين بيانات الجلسة
-                    currentUser = username;
-                    userRole = 'admin';
-                    sessionStorage.setItem('currentUser', currentUser);
-                    sessionStorage.setItem('userRole', userRole);
-                    showAppContent();
-                    showNotification('تم تسجيل الدخول بنجاح كمدير!');
-                } else {
-                    showLoginNotification('بيانات الدخول غير صحيحة للمدير', true);
-                }
+                loginValid = (username === 'العمراوي نورالدين' && password === 'admin2023');
             } else {
-                // تحقق من بيانات المتفقد (كلمة المرور هي نفس اسم المستخدم لهذا المثال)
-                if (password === username) {
-                    // تخزين بيانات الجلسة
-                    currentUser = username;
-                    userRole = 'inspector';
-                    sessionStorage.setItem('currentUser', currentUser);
-                    sessionStorage.setItem('userRole', userRole);
-                    showAppContent();
-                    showNotification('تم تسجيل الدخول بنجاح!');
-                } else {
-                    showLoginNotification('كلمة المرور غير صحيحة. كلمة المرور الافتراضية هي اسم المستخدم', true);
-                }
+                // للمتفقدين: كلمة المرور = اسم المستخدم (مبسط للمثال)
+                loginValid = (password === username);
+            }
+            
+            if (loginValid) {
+                currentUser = username;
+                userRole = userType === 'admin' ? 'admin' : 'inspector';
+                
+                // حفظ الجلسة
+                sessionStorage.setItem('currentUser', currentUser);
+                sessionStorage.setItem('userRole', userRole);
+                
+                showAppContent();
+                showNotification('تم تسجيل الدخول بنجاح!');
+                
+                // إعلان الدخول للنظام
+                announceUserActivity('login');
+                
+            } else {
+                showNotification('بيانات الدخول غير صحيحة', true);
             }
         }
         
-        // تسجيل الخروج
         function logout() {
-            showConfirmation(
-                "تسجيل الخروج", 
-                "هل أنت متأكد من أنك تريد تسجيل الخروج?", 
-                function() {
-                    currentUser = null;
-                    userRole = null;
-                    sessionStorage.removeItem('currentUser');
-                    sessionStorage.removeItem('userRole');
-                    
-                    loginSection.style.display = 'block';
-                    userInfo.style.display = 'none';
-                    statsSection.style.display = 'none';
-                    appContent.style.display = 'none';
-                    footer.style.display = 'none';
-                    
-                    // إعادة تعيين حقول تسجيل الدخول
-                    document.getElementById('username').value = '';
-                    document.getElementById('password').value = '';
-                    setUserType('inspector');
-                    
-                    // إيقاف المزامنة التلقائية
-                    stopAutoSync();
-                    
-                    showNotification('تم تسجيل الخروج بنجاح');
-                }
-            );
+            showConfirmation('تسجيل الخروج', 'هل أنت متأكد من أنك تريد تسجيل الخروج؟', function() {
+                // إعلان الخروج
+                announceUserActivity('logout');
+                
+                // إزالة المستخدم من القائمة
+                onlineUsers.delete(currentUser);
+                updateOnlineUsersDisplay();
+                
+                // مسح البيانات
+                currentUser = null;
+                userRole = null;
+                sessionStorage.clear();
+                
+                // إعادة تعيين الواجهة
+                showLoginSection();
+                showNotification('تم تسجيل الخروج بنجاح');
+                
+                // إيقاف المزامنة
+                stopRealTimeSync();
+            });
         }
         
-        // عرض المحتوى الرئيسي بعد تسجيل الدخول
+        // ======== وظائف الواجهة ========
         function showAppContent() {
             loginSection.style.display = 'none';
             userInfo.style.display = 'flex';
-            statsSection.style.display = 'flex';
-            appContent.style.display = 'flex';
-            footer.style.display = 'block';
+            connectionStatus.style.display = 'flex';
+            document.querySelector('.stats').style.display = 'flex';
+            document.querySelector('.app-content').style.display = 'flex';
+            document.querySelector('footer').style.display = 'block';
             
-            currentUserSpan.textContent = currentUser;
-            userRoleSpan.textContent = `(${userRole === 'admin' ? 'مدير' : 'متفقد'})`;
+            // عرض علامات التبويب للجوال إذا لزم الأمر
+            checkMobileView();
             
-            // التحقق إذا كان المستخدم هو المدير لإظهار أزرار المدير
-            if (userRole === 'admin') {
-                excelDownloadBtn.classList.add('admin-visible');
-                clearAllBtn.classList.add('admin-visible');
-                autoFilterEnabled = false; // المدير يرى كل التقارير
-                currentFilterInfo.style.display = 'none';
-            } else {
-                excelDownloadBtn.classList.remove('admin-visible');
-                clearAllBtn.classList.remove('admin-visible');
-                autoFilterEnabled = true; // المتفقد يرى تقاريره فقط
-                
-                // عرض معلومات التصفية التلقائية
-                currentFilterInfo.style.display = 'flex';
-                filterText.textContent = `يتم عرض التقارير الخاصة بـ: ${currentUser}`;
-            }
+            // تحديث معلومات المستخدم
+            document.getElementById('currentUser').textContent = currentUser;
+            document.getElementById('userRole').textContent = `(${userRole === 'admin' ? 'مدير' : 'متفقد'})`;
             
-            // تطبيق التصفية التلقائية إذا لزم الأمر
-            applyAutoFilter();
+            // إعداد صلاحيات المدير
+            const adminElements = document.querySelectorAll('.admin-only');
+            adminElements.forEach(el => {
+                if (userRole === 'admin') {
+                    el.classList.add('admin-visible');
+                } else {
+                    el.classList.remove('admin-visible');
+                }
+            });
             
-            // بدء المزامنة التلقائية
-            startAutoSync();
-        }
-        
-        // تطبيق التصفية التلقائية بناءً على المستخدم
-        function applyAutoFilter() {
-            if (autoFilterEnabled && currentUser) {
+            // تطبيق التصفية التلقائية للمتفقدين
+            if (userRole === 'inspector') {
+                autoFilterEnabled = true;
                 currentFilter = currentUser;
-                loadReports();
+                document.getElementById('currentFilterInfo').style.display = 'flex';
+                document.getElementById('filterText').textContent = `يتم عرض التقارير الخاصة بـ: ${currentUser}`;
             } else {
-                currentFilter = '';
-                loadReports();
+                autoFilterEnabled = false;
+                document.getElementById('currentFilterInfo').style.display = 'none';
+            }
+            
+            loadReports();
+            startRealTimeSync();
+        }
+        
+        function showLoginSection() {
+            loginSection.style.display = 'block';
+            userInfo.style.display = 'none';
+            connectionStatus.style.display = 'none';
+            document.querySelector('.stats').style.display = 'none';
+            document.querySelector('.app-content').style.display = 'none';
+            document.querySelector('footer').style.display = 'none';
+            mobileTabs.style.display = 'none';
+            
+            // إعادة تعيين النموذج
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            setUserType('inspector');
+        }
+        
+        // ======== نظام المزامنة الفورية ========
+        function initializeRealTimeSync() {
+            // محاكاة قاعدة البيانات المشتركة باستخدام localStorage
+            if (!localStorage.getItem('sharedReports')) {
+                localStorage.setItem('sharedReports', JSON.stringify([]));
+            }
+            
+            if (!localStorage.getItem('onlineUsers')) {
+                localStorage.setItem('onlineUsers', JSON.stringify({}));
+            }
+            
+            if (!localStorage.getItem('lastActivity')) {
+                localStorage.setItem('lastActivity', JSON.stringify({}));
             }
         }
         
-        // تعيين التاريخ الحالي كق افتراضي
-        function setCurrentDate() {
-            const today = new Date();
-            const formattedDate = today.toISOString().substr(0, 10);
-            document.getElementById('visit-date').value = formattedDate;
+        function startRealTimeSync() {
+            if (!syncEnabled) return;
+            
+            // إضافة المستخدم للقائمة المتصلة
+            const users = JSON.parse(localStorage.getItem('onlineUsers') || '{}');
+            users[currentUser] = {
+                name: currentUser,
+                role: userRole,
+                lastSeen: Date.now(),
+                status: 'online'
+            };
+            localStorage.setItem('onlineUsers', JSON.stringify(users));
+            onlineUsers.set(currentUser, users[currentUser]);
+            
+            // بدء المزامنة المستمرة
+            syncInterval = setInterval(() => {
+                checkForUpdates();
+                updateHeartbeat();
+            }, 2000); // كل ثانيتين
+            
+            // بدء مراقبة النشاط
+            heartbeatInterval = setInterval(() => {
+                sendHeartbeat();
+                cleanupOfflineUsers();
+            }, 5000); // كل 5 ثوان
+            
+            updateSyncStatus('connected');
+            showNotification('تم تفعيل المزامنة الفورية', false, 'sync');
         }
         
-        // إظهار الإشعار
-        function showNotification(message, isError = false) {
-            notificationText.textContent = message;
-            mainNotification.classList.remove('error');
-            
-            if (isError) {
-                mainNotification.classList.add('error');
+        function stopRealTimeSync() {
+            if (syncInterval) {
+                clearInterval(syncInterval);
+                syncInterval = null;
             }
             
-            mainNotification.classList.add('show');
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
             
+            updateSyncStatus('disconnected');
+        }
+        
+        function checkForUpdates() {
+            if (!syncEnabled) return;
+            
+            try {
+                // التحقق من التقارير الجديدة
+                const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
+                const localReportsCount = reports.length;
+                
+                if (sharedReports.length !== localReportsCount) {
+                    const newReports = sharedReports.filter(sr => 
+                        !reports.some(r => r.id === sr.id)
+                    );
+                    
+                    if (newReports.length > 0) {
+                        reports = [...sharedReports];
+                        localStorage.setItem('mosqueReports', JSON.stringify(reports));
+                        
+                        loadReports();
+                        updateStats();
+                        
+                        // إظهار التقارير الجديدة بتأثير بصري
+                        highlightNewRecords(newReports);
+                        
+                        showNotification(`تم إضافة ${newReports.length} تقرير جديد`, false, 'sync');
+                    }
+                }
+                
+                // التحقق من المستخدمين المتصلين
+                updateOnlineUsers();
+                
+                // التحقق من الأنشطة الجديدة
+                checkForNewActivity();
+                
+            } catch (error) {
+                console.error('خطأ في المزامنة:', error);
+            }
+        }
+        
+        function announceUserActivity(action, details = {}) {
+            const activity = {
+                user: currentUser,
+                action: action,
+                details: details,
+                timestamp: Date.now()
+            };
+            
+            // حفظ النشاط
+            const activities = JSON.parse(localStorage.getItem('lastActivity') || '{}');
+            activities[currentUser] = activity;
+            localStorage.setItem('lastActivity', JSON.stringify(activities));
+            
+            // إعلان النشاط للمستخدمين الآخرين
+            broadcastActivity(activity);
+        }
+        
+        function broadcastActivity(activity) {
+            // محاكاة البث للمستخدمين الآخرين
+            const event = new CustomEvent('userActivity', { detail: activity });
+            window.dispatchEvent(event);
+        }
+        
+        function checkForNewActivity() {
+            const activities = JSON.parse(localStorage.getItem('lastActivity') || '{}');
+            
+            Object.keys(activities).forEach(user => {
+                if (user !== currentUser) {
+                    const activity = activities[user];
+                    const timeDiff = Date.now() - activity.timestamp;
+                    
+                    // إظهار النشاط إذا كان حديثاً (أقل من 10 ثوان)
+                    if (timeDiff < 10000 && !activity.shown) {
+                        showUserActivity(activity);
+                        activity.shown = true;
+                        activities[user] = activity;
+                        localStorage.setItem('lastActivity', JSON.stringify(activities));
+                    }
+                }
+            });
+        }
+        
+        function showUserActivity(activity) {
+            const activityText = getActivityText(activity);
+            document.getElementById('activityText').textContent = activityText;
+            
+            activityIndicator.classList.add('show');
+            
+            // إخفاء بعد 3 ثوان
             setTimeout(() => {
-                mainNotification.classList.remove('show');
+                activityIndicator.classList.remove('show');
             }, 3000);
         }
         
-        // تحديث حالة المزامنة
-        function updateSyncStatus(syncing = false, message = '') {
-            if (syncing) {
-                syncStatus.innerHTML = '<i class="fas fa-sync-alt"></i> <span>جاري المزامنة...</span>';
-                syncStatus.classList.add('syncing');
-            } else {
-                syncStatus.innerHTML = '<i class="fas fa-check-circle"></i> <span>' + (message || 'مزامنة البيانات مكتملة') + '</span>';
-                syncStatus.classList.remove('syncing');
+        function getActivityText(activity) {
+            switch(activity.action) {
+                case 'login':
+                    return `${activity.user} دخل إلى النظام`;
+                case 'logout':
+                    return `${activity.user} خرج من النظام`;
+                case 'add_report':
+                    return `${activity.user} أضاف تقريراً جديداً`;
+                case 'edit_report':
+                    return `${activity.user} عدّل تقريراً`;
+                case 'delete_report':
+                    return `${activity.user} حذف تقريراً`;
+                default:
+                    return `${activity.user} قام بنشاط جديد`;
             }
         }
         
-        // التحقق من صحة النموذج
+        function updateOnlineUsers() {
+            const users = JSON.parse(localStorage.getItem('onlineUsers') || '{}');
+            onlineUsers.clear();
+            
+            Object.values(users).forEach(user => {
+                const timeDiff = Date.now() - user.lastSeen;
+                
+                // تحديد حالة المستخدم
+                if (timeDiff < 10000) { // أقل من 10 ثوان
+                    user.status = 'online';
+                } else if (timeDiff < 60000) { // أقل من دقيقة
+                    user.status = 'idle';
+                } else { // أكثر من دقيقة
+                    user.status = 'offline'
+                }
+                
+                onlineUsers.set(user.name, user);
+            });
+            
+            updateOnlineUsersDisplay();
+        }
+        
+        function updateOnlineUsersDisplay() {
+            const onlineCount = Array.from(onlineUsers.values()).filter(u => u.status === 'online').length;
+            document.getElementById('onlineUsersCount').textContent = `(${onlineCount} مستخدمين متصلين)`;
+            
+            // تحديث قائمة المستخدمين
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            
+            Array.from(onlineUsers.values()).forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-status ${user.status}"></div>
+                    <span>${user.name} (${user.role === 'admin' ? 'مدير' : 'متفقد'})</span>
+                `;
+                usersList.appendChild(userItem);
+            });
+        }
+        
+        function sendHeartbeat() {
+            if (!currentUser) return;
+            
+            const users = JSON.parse(localStorage.getItem('onlineUsers') || '{}');
+            if (users[currentUser]) {
+                users[currentUser].lastSeen = Date.now();
+                localStorage.setItem('onlineUsers', JSON.stringify(users));
+            }
+        }
+        
+        function cleanupOfflineUsers() {
+            const users = JSON.parse(localStorage.getItem('onlineUsers') || '{}');
+            const now = Date.now();
+            let changed = false;
+            
+            Object.keys(users).forEach(username => {
+                const user = users[username];
+                const timeDiff = now - user.lastSeen;
+                
+                // إزالة المستخدمين الذين لم يظهروا لأكثر من 5 دقائق
+                if (timeDiff > 300000) {
+                    delete users[username];
+                    changed = true;
+                }
+            });
+            
+            if (changed) {
+                localStorage.setItem('onlineUsers', JSON.stringify(users));
+            }
+        }
+        
+        function highlightNewRecords(newReports) {
+            // تأخير قليل للسماح بتحميل الجدول
+            setTimeout(() => {
+                newReports.forEach(report => {
+                    const rows = document.querySelectorAll('#reportsTable tr');
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length > 0 && cells[0].textContent === report.number) {
+                            row.classList.add('new-record');
+                            // إزالة التمييز بعد 3 ثوان
+                            setTimeout(() => {
+                                row.classList.remove('new-record');
+                            }, 3000);
+                        }
+                    });
+                });
+            }, 500);
+        }
+        
+        function updateSyncStatus(status) {
+            const syncStatusEl = document.getElementById('syncStatus');
+            const connectionDot = document.getElementById('connectionDot');
+            const connectionText = document.getElementById('connectionText');
+            
+            syncStatusEl.className = 'sync-status';
+            connectionDot.className = 'connection-dot';
+            
+            switch(status) {
+                case 'connected':
+                    syncStatusEl.innerHTML = '<i class="fas fa-wifi"></i><span>متصل</span>';
+                    connectionText.textContent = 'متصل بالخادم';
+                    break;
+                case 'syncing':
+                    syncStatusEl.classList.add('syncing');
+                    syncStatusEl.innerHTML = '<i class="fas fa-sync-alt"></i><span>جاري المزامنة</span>';
+                    break;
+                case 'connecting':
+                    syncStatusEl.classList.add('connecting');
+                    connectionDot.classList.add('connecting');
+                    syncStatusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>جاري الاتصال</span>';
+                    connectionText.textContent = 'جاري الاتصال...';
+                    break;
+                case 'disconnected':
+                    syncStatusEl.classList.add('disconnected');
+                    connectionDot.classList.add('disconnected');
+                    syncStatusEl.innerHTML = '<i class="fas fa-wifi-slash"></i><span>غير متصل</span>';
+                    connectionText.textContent = 'غير متصل';
+                    break;
+            }
+        }
+        
+        // ======== وظائف التحكم في المزامنة ========
+        function toggleSync() {
+            syncEnabled = !syncEnabled;
+            const syncToggle = document.getElementById('syncToggle');
+            
+            if (syncEnabled) {
+                startRealTimeSync();
+                syncToggle.textContent = 'إيقاف المزامنة';
+                syncToggle.classList.remove('disabled');
+            } else {
+                stopRealTimeSync();
+                syncToggle.textContent = 'تفعيل المزامنة';
+                syncToggle.classList.add('disabled');
+            }
+        }
+        
+        function showOnlineUsers() {
+            const panel = document.getElementById('onlineUsers');
+            panel.classList.toggle('show');
+            
+            // إخفاء تلقائي بعد 5 ثوان
+            setTimeout(() => {
+                panel.classList.remove('show');
+            }, 5000);
+        }
+        
+        // ======== وظائف النموذج ========
         function validateForm() {
             let isValid = true;
             
@@ -1528,13 +1882,11 @@
             return isValid;
         }
         
-        // التحقق من صحة النموذج ثم الإرسال
         function validateAndSubmitForm() {
             if (validateForm()) {
                 submitForm();
             } else {
                 showNotification('يرجى ملء جميع الحقول الإلزامية', true);
-                // التمرير إلى أول حقل به خطأ
                 const firstError = document.querySelector('.form-group.error');
                 if (firstError) {
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1542,80 +1894,85 @@
             }
         }
         
-        // إرسال النموذج
         function submitForm() {
-            // التحقق من تسجيل الدخول أولاً
             if (!currentUser) {
                 showNotification('يرجى تسجيل الدخول أولاً', true);
                 return;
             }
             
-            const number = document.getElementById('number').value;
-            const month = document.getElementById('month').value;
-            const regionalDelegation = document.getElementById('regional-delegation').value;
-            const inspector = document.getElementById('inspector').value;
-            const employeeId = document.getElementById('employee-id').value;
-            const mosqueName = document.getElementById('mosque-name').value;
-            const infoCode = document.getElementById('info-code').value;
-            const community = document.getElementById('community').value;
-            const visitDate = document.getElementById('visit-date').value;
-            const visitTopic = document.getElementById('visit-topic').value;
-            const notes = document.getElementById('notes').value;
-            const actions = document.getElementById('actions').value;
-            const attachments = document.getElementById('attachments').value;
+            updateSyncStatus('syncing');
             
-            const newReport = {
+            // جمع بيانات النموذج
+            const formData = {
                 id: Date.now(),
-                number,
-                regionalDelegation,
-                month,
-                inspector,
-                employeeId,
-                mosqueName,
-                infoCode,
-                community,
-                visitDate,
-                visitTopic,
-                notes,
-                actions,
-                attachments,
-                createdAt: new Date().toISOString()
+                number: document.getElementById('number').value,
+                regionalDelegation: document.getElementById('regional-delegation').value,
+                month: document.getElementById('month').value,
+                inspector: document.getElementById('inspector').value,
+                employeeId: document.getElementById('employee-id').value,
+                mosqueName: document.getElementById('mosque-name').value,
+                infoCode: document.getElementById('info-code').value,
+                community: document.getElementById('community').value,
+                visitDate: document.getElementById('visit-date').value,
+                visitTopic: document.getElementById('visit-topic').value,
+                notes: document.getElementById('notes').value,
+                actions: document.getElementById('actions').value,
+                attachments: document.getElementById('attachments').value,
+                createdAt: new Date().toISOString(),
+                createdBy: currentUser
             };
             
-            // إضافة التقرير إلى البيانات
-            reports.push(newReport);
-            saveReports();
-            addReportToTable(newReport);
-            updateExcelData(newReport);
-            clearForm();
+            // إضافة للتقارير المحلية
+            reports.push(formData);
+            localStorage.setItem('mosqueReports', JSON.stringify(reports));
+            
+            // مزامنة مع التخزين المشترك
+            const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
+            sharedReports.push(formData);
+            localStorage.setItem('sharedReports', JSON.stringify(sharedReports));
+            
+            // تحديث الجدول
+            addReportToTable(formData);
             updateStats();
             
-            // تحديث ملف Excel تلقائياً
-            updateExcelFile();
+            // مسح النموذج
+            clearForm();
             
-            // تحديث وقت التعديل الأخير للمزامنة
-            updateLastModifiedTime();
+            // إعلان النشاط
+            announceUserActivity('add_report', { 
+                mosqueName: formData.mosqueName,
+                reportId: formData.id 
+            });
             
-            showNotification('تم إضافة التقرير بنجاح!');
+            updateSyncStatus('connected');
+            showNotification('تم إضافة التقرير وإرساله لجميع المستخدمين!', false, 'sync');
             
-            // إعادة تعيين حالة التغييرات
             formChanged = false;
         }
         
-        // حفظ التقارير في localStorage
-        function saveReports() {
-            localStorage.setItem('mosqueReports', JSON.stringify(reports));
-            updateLastModifiedTime();
+        function clearForm() {
+            const fields = ['number', 'mosque-name', 'info-code', 'visit-topic', 'notes', 'actions', 'attachments'];
+            fields.forEach(field => {
+                document.getElementById(field).value = '';
+            });
+            
+            // إخفاء رسائل الخطأ
+            document.querySelectorAll('.form-error').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            document.querySelectorAll('.form-group').forEach(el => {
+                el.classList.remove('error');
+            });
+            
+            setCurrentDate();
+            formChanged = false;
         }
         
-        // تحميل التقارير من localStorage
+        // ======== وظائف الجدول ========
         function loadReports() {
             const table = document.getElementById('reportsTable');
             table.innerHTML = '';
-            
-            // تحميل البيانات من localStorage في كل مرة للتأكد من أحدث البيانات
-            const storedReports = localStorage.getItem('mosqueReports');
-            reports = storedReports ? JSON.parse(storedReports) : [];
             
             if (reports.length === 0) {
                 table.innerHTML = '<tr><td colspan="14" style="text-align: center;">لا توجد تقارير مسجلة</td></tr>';
@@ -1624,36 +1981,32 @@
             
             let reportsToShow = reports;
             
-            // تطبيق التصفية إذا كانت موجودة
+            // تطبيق التصفية
             if (currentFilter) {
                 reportsToShow = reports.filter(report => report.inspector === currentFilter);
             }
+            
+            // ترتيب التقارير حسب التاريخ (الأحدث أولاً)
+            reportsToShow.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             reportsToShow.forEach(report => {
                 addReportToTable(report);
             });
         }
         
-        // إضافة تقرير إلى الجدول
         function addReportToTable(report) {
             const table = document.getElementById('reportsTable');
             
-            // إذا كانت الرسالة "لا توجد تقارير مسجلة" موجودة، قم بإزالتها
             if (table.innerHTML.includes('لا توجد تقارير مسجلة')) {
                 table.innerHTML = '';
             }
             
-            // إذا كان هناك تصفية نشطة ولا يتطابق التقرير معها، لا تعرضه
             if (currentFilter && report.inspector !== currentFilter) {
                 return;
             }
             
             const row = document.createElement('tr');
             
-            // تنسيق التاريخ بالشكل الفرنسي (YYYY-MM-DD)
-            const formattedDate = report.visitDate;
-            
-            // إنشاء رابط للمرفق إذا كان موجوداً
             let attachmentHtml = 'لا يوجد';
             if (report.attachments) {
                 attachmentHtml = `<a href="${report.attachments}" class="attachment-link" target="_blank">
@@ -1670,314 +2023,35 @@
                 <td>${report.mosqueName}</td>
                 <td>${report.infoCode}</td>
                 <td>${report.community}</td>
-                <td>${formattedDate}</td>
+                <td>${report.visitDate}</td>
                 <td>${report.visitTopic}</td>
                 <td>${report.notes}</td>
                 <td>${report.actions || 'لا يوجد'}</td>
                 <td>${attachmentHtml}</td>
                 <td class="action-cell">
-                    <button class="action-btn edit-btn" onclick="editReport(${report.id})"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn delete-btn" onclick="confirmDeleteReport(${report.id})"><i class="fas fa-trash"></i></button>
+                    <button class="action-btn edit-btn" onclick="editReport(${report.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-btn delete-btn" onclick="confirmDeleteReport(${report.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             `;
             
             table.appendChild(row);
         }
         
-        // تأكيد حذف تقرير
-        function confirmDeleteReport(id) {
-            const report = reports.find(r => r.id === id);
-            if (!report) return;
-            
-            showConfirmation(
-                "حذف التقرير", 
-                `هل أنت متأكد من أنك تريد حذف التقرير رقم ${report.number} الخاص بمسجد ${report.mosqueName}?`, 
-                function() {
-                    deleteReport(id);
-                }
-            );
-        }
-        
-        // تحميل بيانات Excel من localStorage
-        function loadExcelData() {
-            const savedExcelData = localStorage.getItem('excelData');
-            if (savedExcelData) {
-                excelData = JSON.parse(savedExcelData);
-            } else {
-                // تهيئة بيانات Excel إذا لم تكن موجودة
-                initExcelData();
-            }
-        }
-        
-        // تهيئة بيانات Excel
-        function initExcelData() {
-            excelData = {};
-            // إنشاء أوراق لكل متفقد
-            const inspectors = [...new Set(reports.map(report => report.inspector))];
-            inspectors.forEach(inspector => {
-                excelData[inspector] = [];
-            });
-            
-            // إضافة البيانات الموجودة
-            reports.forEach(report => {
-                if (!excelData[report.inspector]) {
-                    excelData[report.inspector] = [];
-                }
-                
-                excelData[report.inspector].push({
-                    'ر.ت': report.number,
-                    'المندوبية الإقليمية': report.regionalDelegation,
-                    'الشهر': report.month,
-                    'إسم المتفقد': report.inspector,
-                    'ر.ب.و.ت': report.employeeId,
-                    'اسم المسجد المعني بالزيارة': report.mosqueName,
-                    'رمزه المعلوماتي': report.infoCode,
-                    'اسم الجماعة': report.community,
-                    'تاريخ الزيارة التفقدية': report.visitDate,
-                    'المهمة أو المهام موضوع الزيارة': report.visitTopic,
-                    'الملاحظات المسجلة': report.notes,
-                    'الإجراءات التي اتخذتها المندوبية': report.actions || '',
-                    'رابط المرفقات': report.attachments || ''
-                });
-            });
-            
-            saveExcelData();
-        }
-        
-        // تحديث بيانات Excel بتقرير جديد
-        function updateExcelData(report) {
-            if (!excelData[report.inspector]) {
-                excelData[report.inspector] = [];
-            }
-            
-            excelData[report.inspector].push({
-                'ر.ت': report.number,
-                'المندوبية الإقليمية': report.regionalDelegation,
-                'الشهر': report.month,
-                'إسم المتفقد': report.inspector,
-                'ر.ب.و.ت': report.employeeId,
-                'اسم المسجد المعني بالزيارة': report.mosqueName,
-                'رمزه المعلوماتي': report.infoCode,
-                'اسم الجماعة': report.community,
-                'تاريخ الزيارة التفقدية': report.visitDate,
-                'المهمة أو المهام موضوع الزيارة': report.visitTopic,
-                'الملاحظات المسجلة': report.notes,
-                'الإجراءات التي اتخذتها المندوبية': report.actions || '',
-                'رابط المرفقات': report.attachments || ''
-            });
-            
-            saveExcelData();
-        }
-        
-        // حفظ بيانات Excel في localStorage
-        function saveExcelData() {
-            localStorage.setItem('excelData', JSON.stringify(excelData));
-        }
-        
-        // تحديث ملف Excel وتخزينه في الذاكرة
-        function updateExcelFile() {
-            if (reports.length === 0) {
-                excelBlob = null;
-                return;
-            }
-            
-            updateSyncStatus(true, 'جاري تحديث ملف Excel...');
-            
-            setTimeout(() => {
-                try {
-                    // إنشاء مصنف Excel جديد
-                    const workbook = XLSX.utils.book_new();
-                    
-                    // إضافة ورقة لكل متفقد
-                    Object.keys(excelData).forEach(inspector => {
-                        if (excelData[inspector].length > 0) {
-                            const worksheet = XLSX.utils.json_to_sheet(excelData[inspector]);
-                            XLSX.utils.book_append_sheet(workbook, worksheet, inspector.substring(0, 30));
-                        }
-                    });
-                    
-                    // تحويل المصنف إلى ثنائي (binary)
-                    const excelBinary = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
-                    
-                    // تحويل الثنائي إلى Blob
-                    function s2ab(s) {
-                        const buf = new ArrayBuffer(s.length);
-                        const view = new Uint8Array(buf);
-                        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-                        return buf;
-                    }
-                    
-                    excelBlob = new Blob([s2ab(excelBinary)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                    
-                    updateSyncStatus(false, 'تم تحديث ملف Excel بنجاح');
-                    
-                } catch (error) {
-                    console.error('حدث خطأ أثناء تحديث ملف Excel: ', error);
-                    updateSyncStatus(false, 'حدث خطأ أثناء التحديث');
-                }
-            }, 500);
-        }
-        
-        // تحميل ملف Excel
-        function downloadExcel() {
-            // التحقق من أن المستخدم هو المدير
-            if (userRole !== 'admin') {
-                showNotification('عفواً، لا تملك صلاحية تحميل ملف Excel', true);
-                return;
-            }
-            
-            if (!excelBlob) {
-                showNotification('لا توجد بيانات للتصدير', true);
-                return;
-            }
-            
-            // إنشاء رابط تحميل
-            const url = URL.createObjectURL(excelBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `تقارير_الزيارات_التفقدية_لشهر_${new Date().toLocaleDateString('fr-EG')}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            
-            // التنظيف
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
-            
-            showNotification('تم تحميل ملف Excel بنجاح');
-        }
-        
-        // تصفية حسب المتفقد
-        function filterByInspector() {
-            const inspector = document.getElementById('filter-inspector').value;
-            currentFilter = inspector;
-            autoFilterEnabled = false;
-            currentFilterInfo.style.display = 'none';
-            loadReports();
-        }
-        
-        // تصفية حسب الشهر
-        function filterByMonth() {
-            const month = document.getElementById('filter-month').value;
-            const table = document.getElementById('reportsTable');
-            table.innerHTML = '';
-            
-            if (!month) {
-                loadReports();
-                return;
-            }
-            
-            let reportsToShow = reports;
-            
-            // تطبيق التصفية الحالية إذا كانت موجودة
-            if (currentFilter) {
-                reportsToShow = reports.filter(report => report.inspector === currentFilter);
-            }
-            
-            // تطبيق تصفية الشهر
-            reportsToShow = reportsToShow.filter(report => report.month === month);
-            
-            if (reportsToShow.length === 0) {
-                table.innerHTML = '<tr><td colspan="14" style="text-align: center;">لا توجد تقارير لهذا الشهر</td></tr>';
-                return;
-            }
-            
-            reportsToShow.forEach(report => {
-                addReportToTable(report);
-            });
-        }
-        
-        // تحديث الإحصائيات
-        function updateStats() {
-            document.getElementById('total-reports').textContent = reports.length;
-            
-            const currentMonth = new Date().toLocaleString('ar-EG', { month: 'long' });
-            const thisMonthCount = reports.filter(report => report.month === currentMonth).length;
-            document.getElementById('this-month').textContent = thisMonthCount;
-            
-            const pendingCount = reports.filter(report => !report.actions || report.actions.trim() === '').length;
-            document.getElementById('pending-actions').textContent = pendingCount;
-            
-            const completedCount = reports.length - pendingCount;
-            document.getElementById('completed').textContent = completedCount;
-        }
-        
-        // مسح النموذج
-        function clearForm() {
-            document.getElementById('number').value = '';
-            document.getElementById('mosque-name').value = '';
-            document.getElementById('info-code').value = '';
-            document.getElementById('visit-topic').value = '';
-            document.getElementById('notes').value = '';
-            document.getElementById('actions').value = '';
-            document.getElementById('attachments').value = '';
-            setCurrentDate();
-            
-            // إخفاء رسائل الخطأ
-            document.querySelectorAll('.form-error').forEach(el => {
-                el.style.display = 'none';
-            });
-            
-            document.querySelectorAll('.form-group').forEach(el => {
-                el.classList.remove('error');
-            });
-            
-            // إعادة تعيين حالة التغييرات
-            formChanged = false;
-        }
-        
-        // تحديث البيانات
-        function refreshData() {
-            loadReports();
-            updateStats();
-            showNotification('تم تحديث البيانات');
-        }
-        
-        // مسح جميع البيانات
-        function clearAllData() {
-            reports = [];
-            saveReports();
-            loadReports();
-            updateStats();
-            initExcelData();
-            updateExcelFile();
-            
-            // تحديث وقت التعديل الأخير للمزامنة
-            updateLastModifiedTime();
-            
-            showNotification('تم مسح جميع البيانات');
-        }
-        
-        // حذف تقرير
-        function deleteReport(id) {
-            const reportToDelete = reports.find(report => report.id === id);
-            reports = reports.filter(report => report.id !== id);
-            saveReports();
-            loadReports();
-            updateStats();
-            
-            // حذف التقرير من بيانات Excel
-            if (reportToDelete && excelData[reportToDelete.inspector]) {
-                excelData[reportToDelete.inspector] = excelData[reportToDelete.inspector].filter(
-                    item => item['ر.ت'] !== reportToDelete.number
-                );
-                saveExcelData();
-                updateExcelFile();
-            }
-            
-            // تحديث وقت التعديل الأخير للمزامنة
-            updateLastModifiedTime();
-            
-            showNotification('تم حذف التقرير');
-        }
-        
-        // تعديل تقرير
         function editReport(id) {
             const report = reports.find(r => r.id === id);
             if (!report) return;
             
-            // ملء النموذج ببيانات التقرير
+            // التحقق من الصلاحيات
+            if (userRole !== 'admin' && report.createdBy !== currentUser) {
+                showNotification('لا يمكنك تعديل تقارير المستخدمين الآخرين', true);
+                return;
+            }
+            
+            // ملء النموذج
             document.getElementById('number').value = report.number;
             document.getElementById('month').value = report.month;
             document.getElementById('inspector').value = report.inspector;
@@ -1992,28 +2066,355 @@
             document.getElementById('attachments').value = report.attachments || '';
             
             // حذف التقرير القديم
+            deleteReportById(id);
+            
+            announceUserActivity('edit_report', { 
+                mosqueName: report.mosqueName,
+                reportId: report.id 
+            });
+            
+            showNotification('يمكنك الآن تعديل التقرير وإعادة حفظه');
+            formChanged = true;
+        }
+        
+        function confirmDeleteReport(id) {
+            const report = reports.find(r => r.id === id);
+            if (!report) return;
+            
+            // التحقق من الصلاحيات
+            if (userRole !== 'admin' && report.createdBy !== currentUser) {
+                showNotification('لا يمكنك حذف تقارير المستخدمين الآخرين', true);
+                return;
+            }
+            
+            showConfirmation(
+                'حذف التقرير', 
+                `هل أنت متأكد من حذف تقرير ${report.mosqueName}؟`,
+                () => deleteReport(id)
+            );
+        }
+        
+        function deleteReport(id) {
+            updateSyncStatus('syncing');
+            
+            const report = reports.find(r => r.id === id);
+            
+            deleteReportById(id);
+            
+            announceUserActivity('delete_report', { 
+                mosqueName: report?.mosqueName,
+                reportId: id 
+            });
+            
+            updateSyncStatus('connected');
+            showNotification('تم حذف التقرير من جميع الأجهزة', false, 'sync');
+        }
+        
+        function deleteReportById(id) {
+            // حذف من التقارير المحلية
             reports = reports.filter(r => r.id !== id);
-            saveReports();
+            localStorage.setItem('mosqueReports', JSON.stringify(reports));
+            
+            // حذف من التخزين المشترك
+            const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
+            const filteredShared = sharedReports.filter(r => r.id !== id);
+            localStorage.setItem('sharedReports', JSON.stringify(filteredShared));
+            
+            loadReports();
+            updateStats();
+        }
+        
+        // ======== وظائف التصفية ========
+        function filterByInspector() {
+            const inspector = document.getElementById('filter-inspector').value;
+            currentFilter = inspector;
+            autoFilterEnabled = false;
+            document.getElementById('currentFilterInfo').style.display = 'none';
+            loadReports();
+        }
+        
+        function filterByMonth() {
+            const month = document.getElementById('filter-month').value;
+            const table = document.getElementById('reportsTable');
+            table.innerHTML = '';
+            
+            if (!month) {
+                loadReports();
+                return;
+            }
+            
+            let reportsToShow = reports;
+            
+            if (currentFilter) {
+                reportsToShow = reports.filter(report => report.inspector === currentFilter);
+            }
+            
+            reportsToShow = reportsToShow.filter(report => report.month === month);
+            
+            if (reportsToShow.length === 0) {
+                table.innerHTML = '<tr><td colspan="14" style="text-align: center;">لا توجد تقارير لهذا الشهر</td></tr>';
+                return;
+            }
+            
+            reportsToShow.forEach(report => {
+                addReportToTable(report);
+            });
+        }
+        
+        function removeFilter() {
+            autoFilterEnabled = false;
+            document.getElementById('currentFilterInfo').style.display = 'none';
+            currentFilter = '';
+            document.getElementById('filter-inspector').value = '';
+            document.getElementById('filter-month').value = '';
+            loadReports();
+        }
+        
+        // ======== وظائف إضافية للجوال ========
+        function checkMobileView() {
+            if (window.innerWidth <= 767) {
+                mobileTabs.style.display = 'flex';
+                document.getElementById('formTab').classList.add('active');
+                document.getElementById('reportsTab').classList.remove('active');
+            } else {
+                mobileTabs.style.display = 'none';
+                document.getElementById('formTab').classList.add('active');
+                document.getElementById('reportsTab').classList.add('active');
+            }
+        }
+        
+        function switchMobileTab(tabName) {
+            document.querySelectorAll('.mobile-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelector(`.mobile-tab:nth-child(${tabName === 'form' ? 1 : 2})`).classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+        
+        // ======== وظائف الإشعارات والعرض ========
+        function showNotification(message, isError = false, type = 'normal') {
+            notificationText.textContent = message;
+            notification.classList.remove('error', 'sync');
+            
+            if (isError) {
+                notification.classList.add('error');
+            } else if (type === 'sync') {
+                notification.classList.add('sync');
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        function showConfirmation(title, message, callback) {
+            document.getElementById('confirmationTitle').textContent = title;
+            document.getElementById('confirmationMessage').textContent = message;
+            document.getElementById('confirmationModal').style.display = 'flex';
+            
+            document.getElementById('confirmAction').onclick = function() {
+                callback();
+                hideConfirmation();
+            };
+        }
+        
+        function hideConfirmation() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+        
+        function showClearAllConfirmation() {
+            if (userRole !== 'admin') {
+                showNotification('هذه العملية متاحة للمدير فقط', true);
+                return;
+            }
+            
+            showConfirmation(
+                'مسح جميع البيانات',
+                'هل أنت متأكد من مسح جميع التقارير؟ هذا الإجراء لا يمكن التراجع عنه.',
+                clearAllData
+            );
+        }
+        
+        function clearAllData() {
+            updateSyncStatus('syncing');
+            
+            reports = [];
+            localStorage.setItem('mosqueReports', JSON.stringify([]));
+            localStorage.setItem('sharedReports', JSON.stringify([]));
+            
             loadReports();
             updateStats();
             
-            // حذف التقرير من بيانات Excel
-            if (excelData[report.inspector]) {
-                excelData[report.inspector] = excelData[report.inspector].filter(
-                    item => item['ر.ت'] !== report.number
-                );
-                saveExcelData();
-                updateExcelFile();
+            announceUserActivity('clear_all');
+            
+            updateSyncStatus('connected');
+            showNotification('تم مسح جميع البيانات من جميع الأجهزة', false, 'sync');
+        }
+        
+        function refreshData() {
+            updateSyncStatus('syncing');
+            
+            // فرض إعادة تحميل البيانات من التخزين المشترك
+            const sharedReports = JSON.parse(localStorage.getItem('sharedReports') || '[]');
+            reports = [...sharedReports];
+            localStorage.setItem('mosqueReports', JSON.stringify(reports));
+            
+            console.log('تم إعادة تحميل البيانات:', reports.length, 'تقارير');
+            
+            setTimeout(() => {
+                loadReports();
+                updateStats();
+                updateSyncStatus('connected');
+                showNotification(`تم تحديث البيانات - عدد التقارير: ${reports.length}`);
+            }, 1000);
+        }
+        
+        function downloadExcel() {
+            if (userRole !== 'admin') {
+                showNotification('عملية التحميل متاحة للمدير فقط', true);
+                return;
             }
             
-            showNotification('يمكنك الآن تعديل التقرير');
+            if (reports.length === 0) {
+                showNotification('لا توجد بيانات للتصدير', true);
+                return;
+            }
             
-            // تعيين حالة التغييرات
-            formChanged = true;
-            
-            // تحديث وقت التعديل الأخير للمزامنة
-            updateLastModifiedTime();
+            try {
+                const workbook = XLSX.utils.book_new();
+                
+                // تجميع التقارير حسب المتفقد
+                const inspectorReports = {};
+                reports.forEach(report => {
+                    if (!inspectorReports[report.inspector]) {
+                        inspectorReports[report.inspector] = [];
+                    }
+                    
+                    inspectorReports[report.inspector].push({
+                        'ر.ت': report.number,
+                        'المندوبية الإقليمية': report.regionalDelegation,
+                        'الشهر': report.month,
+                        'إسم المتفقد': report.inspector,
+                        'ر.ب.و.ت': report.employeeId,
+                        'اسم المسجد': report.mosqueName,
+                        'رمزه المعلوماتي': report.infoCode,
+                        'اسم الجماعة': report.community,
+                        'تاريخ الزيارة': report.visitDate,
+                        'موضوع الزيارة': report.visitTopic,
+                        'الملاحظات': report.notes,
+                        'الإجراءات': report.actions || '',
+                        'المرفقات': report.attachments || ''
+                    });
+                });
+                
+                // إنشاء ورقة لكل متفقد
+                Object.keys(inspectorReports).forEach(inspector => {
+                    const worksheet = XLSX.utils.json_to_sheet(inspectorReports[inspector]);
+                    XLSX.utils.book_append_sheet(workbook, worksheet, inspector.substring(0, 30));
+                });
+                
+                // تحميل الملف
+                const fileName = `تقارير_المساجد_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(workbook, fileName);
+                
+                showNotification('تم تحميل ملف Excel بنجاح');
+                
+            } catch (error) {
+                console.error('خطأ في إنشاء ملف Excel:', error);
+                showNotification('حدث خطأ أثناء إنشاء الملف', true);
+            }
         }
+        
+        // ======== وظائف مساعدة ========
+        function updateStats() {
+            document.getElementById('total-reports').textContent = reports.length;
+            
+            const currentMonth = new Date().toLocaleString('ar-EG', { month: 'long' });
+            const thisMonthCount = reports.filter(report => report.month === currentMonth).length;
+            document.getElementById('this-month').textContent = thisMonthCount;
+            
+            const pendingCount = reports.filter(report => !report.actions || report.actions.trim() === '').length;
+            document.getElementById('pending-actions').textContent = pendingCount;
+            
+            const completedCount = reports.length - pendingCount;
+            document.getElementById('completed').textContent = completedCount;
+        }
+        
+        function setCurrentDate() {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            document.getElementById('visit-date').value = formattedDate;
+        }
+        
+        function checkSavedSession() {
+            const savedUser = sessionStorage.getItem('currentUser');
+            const savedRole = sessionStorage.getItem('userRole');
+            
+            if (savedUser && savedRole) {
+                currentUser = savedUser;
+                userRole = savedRole;
+                showAppContent();
+            }
+        }
+        
+        function setupEventListeners() {
+            // دعم Enter للدخول
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+            
+            // تتبع تغييرات النموذج
+            const formInputs = document.querySelectorAll('input, select, textarea');
+            formInputs.forEach(input => {
+                input.addEventListener('input', () => { formChanged = true; });
+                input.addEventListener('change', () => { formChanged = true; });
+            });
+            
+            // تحذير عند إغلاق الصفحة
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged) {
+                    e.preventDefault();
+                    e.returnValue = 'لديك تغييرات غير محفوظة. هل تريد المغادرة؟';
+                }
+            });
+            
+            // الاستماع لأنشطة المستخدمين
+            window.addEventListener('userActivity', function(e) {
+                if (e.detail.user !== currentUser) {
+                    showUserActivity(e.detail);
+                }
+            });
+            
+            // مراقبة حجم الشاشة للتبديل بين وضع الجوال
+            window.addEventListener('resize', checkMobileView);
+            
+            // تنظيف عند إغلاق الصفحة
+            window.addEventListener('beforeunload', function() {
+                if (currentUser) {
+                    announceUserActivity('logout');
+                }
+            });
+        }
+        
+        // بدء النظام عند تحميل الصفحة
+        window.addEventListener('load', function() {
+            // محاكاة بدء الاتصال
+            setTimeout(() => {
+                if (currentUser) {
+                    updateSyncStatus('connected');
+                }
+            }, 2000);
+        });
+        
     </script>
 </body>
 </html>
