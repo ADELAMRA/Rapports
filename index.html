@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تقارير الزيارات التفقدية للمساجد - مزامنة حقيقية</title>
+    <title>نظام تقارير الزيارات التفقدية للمساجد - المندوبية الإقليمية للشؤون الإسلامية مكناس</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -14,7 +14,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
         
-        // إعدادات Firebase - من مشروعك
         const firebaseConfig = {
             apiKey: "AIzaSyDkOqA77c4Gg1kfWNjhGryvv04R5zhMuUM",
             authDomain: "mosque-reports-2025.firebaseapp.com",
@@ -26,13 +25,11 @@
             measurementId: "G-DC891V2XPV"
         };
 
-        // تهيئة Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth(app);
         const analytics = getAnalytics(app);
         
-        // تصدير للاستخدام العام
         window.firebase = {
             database,
             auth,
@@ -48,93 +45,178 @@
             onAuthStateChanged,
             getAnalytics
         };
+        
+        window.firebaseReady = true;
+        console.log('تم تحميل Firebase بنجاح');
     </script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
         :root {
-            --primary-color: #1a5f7a;
-            --secondary-color: #2c3e50;
-            --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --table-header: #3498db;
-            --sync-color: #00d4aa;
-            --firebase-color: #ff6f00;
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1e40af;
+            --secondary-color: #64748b;
+            --accent-color: #f59e0b;
+            --accent-light: #fbbf24;
+            --success-color: #10b981;
+            --success-light: #34d399;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-color: #ffffff;
+            --light-bg: #f8fafc;
+            --light-border: #e2e8f0;
+            --dark-color: #1e293b;
+            --gray-light: #f1f5f9;
+            --gray-medium: #cbd5e1;
+            --gray-dark: #64748b;
+            --table-header: #1e40af;
+            --sync-color: #10b981;
+            --firebase-color: #fb923c;
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            --gradient-secondary: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --border-radius: 16px;
+            --border-radius-sm: 10px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(195, 207, 226, 0.95) 100%);
+            font-family: 'Cairo', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             color: var(--dark-color);
-            line-height: 1.6;
-            padding: 15px;
+            line-height: 1.7;
             min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
         
         .container {
-            max-width: 100%;
+            max-width: 1400px;
             margin: 0 auto;
-            background-color: rgba(255, 255, 255, 0.98);
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-xl);
             overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
         
         header {
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: var(--gradient-primary);
             color: white;
-            padding: 20px 15px;
-            text-align: center;
+            padding: 30px 35px;
             position: relative;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+            pointer-events: none;
         }
         
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 18px;
+            position: relative;
+            z-index: 1;
         }
         
         .logo {
-            font-size: 28px;
+            font-size: 36px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo:hover {
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
         
         .header-content {
             flex-grow: 1;
+            position: relative;
+            z-index: 1;
         }
         
         header h1 {
-            font-size: 22px;
-            margin-bottom: 8px;
+            font-size: 26px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: -0.5px;
         }
         
         header p {
-            font-size: 14px;
-            opacity: 0.9;
+            font-size: 15px;
+            opacity: 0.95;
+            font-weight: 400;
         }
         
         .app-content {
             display: flex;
             flex-direction: column;
-            padding: 15px;
-            gap: 15px;
+            padding: 30px;
+            gap: 30px;
         }
         
         .form-section {
-            padding: 20px;
-            background-color: var(--light-color);
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--light-border);
+            transition: var(--transition);
+        }
+
+        .form-section:hover {
+            box-shadow: var(--shadow-lg);
         }
         
         .table-section {
@@ -142,205 +224,261 @@
         }
         
         .section-title {
-            font-size: 20px;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--primary-color);
+            font-size: 22px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary-color);
             color: var(--primary-color);
             text-align: center;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 3px;
         }
         
         .form-row {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 18px;
+            margin-bottom: 20px;
         }
         
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 22px;
             position: relative;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
+            margin-bottom: 10px;
+            font-weight: 600;
             color: var(--dark-color);
-            font-size: 14px;
+            font-size: 15px;
         }
         
         .form-group.required label::after {
             content: " *";
-            color: var(--accent-color);
+            color: var(--danger-color);
+            font-weight: 700;
         }
         
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            padding: 14px 18px;
+            border: 2px solid var(--light-border);
+            border-radius: var(--border-radius-sm);
+            font-size: 15px;
+            transition: var(--transition);
+            background: white;
+            font-family: 'Cairo', sans-serif;
+            color: var(--dark-color);
         }
         
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             border-color: var(--primary-color);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(26, 95, 122, 0.2);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-group input:hover, .form-group select:hover, .form-group textarea:hover {
+            border-color: var(--primary-light);
         }
         
         .form-group textarea {
-            height: 80px;
+            height: 110px;
             resize: vertical;
+            line-height: 1.7;
         }
         
         .password-toggle {
             position: absolute;
-            left: 10px;
-            top: 38px;
+            left: 18px;
+            top: 48px;
             cursor: pointer;
-            color: #777;
+            color: var(--gray-dark);
+            transition: var(--transition);
+            font-size: 18px;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
         }
         
         .actions {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 14px;
+            margin-top: 28px;
         }
         
         .btn {
-            padding: 10px 15px;
+            padding: 14px 24px;
             border: none;
-            border-radius: 6px;
-            font-size: 14px;
+            border-radius: var(--border-radius-sm);
+            font-size: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 10px;
             font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
         }
         
         .btn-primary {
-            background-color: var(--primary-color);
+            background: var(--gradient-primary);
             color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #144255;
         }
         
         .btn-success {
-            background-color: var(--success-color);
+            background: var(--gradient-success);
             color: white;
-        }
-        
-        .btn-success:hover {
-            background-color: #219653;
         }
         
         .btn-warning {
-            background-color: var(--warning-color);
+            background: var(--gradient-warning);
             color: white;
-        }
-        
-        .btn-warning:hover {
-            background-color: #e67e22;
         }
         
         .btn-danger {
-            background-color: var(--accent-color);
+            background: var(--gradient-danger);
             color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #c0392b;
         }
         
         .data-table-container {
             overflow-x: auto;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 15px;
-            max-height: 400px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            margin-top: 22px;
+            max-height: 550px;
             overflow-y: auto;
+            border: 1px solid var(--light-border);
+            background: white;
+        }
+
+        .data-table-container::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .data-table-container::-webkit-scrollbar-track {
+            background: var(--gray-light);
+            border-radius: 5px;
+        }
+
+        .data-table-container::-webkit-scrollbar-thumb {
+            background: var(--gray-medium);
+            border-radius: 5px;
+        }
+
+        .data-table-container::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-dark);
         }
         
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1000px;
+            min-width: 1100px;
         }
         
         .data-table th {
-            background-color: var(--table-header);
+            background: var(--gradient-secondary);
             color: white;
-            padding: 12px;
+            padding: 18px 16px;
             text-align: right;
             position: sticky;
             top: 0;
-            font-weight: 600;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 15px;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .data-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 16px;
+            border-bottom: 1px solid var(--light-border);
             font-size: 14px;
-            color: #444;
+            color: var(--dark-color);
+            transition: var(--transition);
         }
         
         .data-table tr:nth-child(even) {
-            background-color: #f8f9fa;
+            background-color: var(--gray-light);
         }
         
         .data-table tr:hover {
-            background-color: #e8f4fc;
-        }
-        
-        .data-table tr.new-record {
-            animation: highlightNew 2s ease-in-out;
-            background-color: #d4edda !important;
-        }
-        
-        .data-table tr.updated-record {
-            animation: highlightUpdate 2s ease-in-out;
-            background-color: #fff3cd !important;
-        }
-        
-        @keyframes highlightNew {
-            0% { background-color: #28a745; }
-            100% { background-color: #d4edda; }
-        }
-        
-        @keyframes highlightUpdate {
-            0% { background-color: #ffc107; }
-            100% { background-color: #fff3cd; }
+            background-color: rgba(37, 99, 235, 0.05);
+            transform: scale(1.001);
         }
         
         .action-cell {
             display: flex;
-            gap: 6px;
+            gap: 10px;
         }
         
         .action-btn {
-            padding: 5px 8px;
+            padding: 8px 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
+            transition: var(--transition);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
         
         .edit-btn {
-            background-color: var(--warning-color);
+            background: var(--gradient-warning);
             color: white;
         }
         
         .delete-btn {
-            background-color: var(--accent-color);
+            background: var(--gradient-danger);
             color: white;
         }
         
@@ -349,69 +487,99 @@
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            font-size: 13px;
+            gap: 6px;
+            font-size: 14px;
+            transition: var(--transition);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
         }
         
         .attachment-link:hover {
-            text-decoration: underline;
+            background: rgba(37, 99, 235, 0.1);
+            transform: translateX(-3px);
         }
         
         footer {
             text-align: center;
-            padding: 15px;
-            margin-top: 15px;
-            color: #7f8c8d;
-            font-size: 12px;
-            border-top: 1px solid #eee;
-            background-color: #f8f9fa;
+            padding: 25px;
+            margin-top: 25px;
+            color: var(--gray-dark);
+            font-size: 14px;
+            border-top: 2px solid var(--light-border);
+            background: var(--light-bg);
+            font-weight: 500;
         }
         
         .stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 15px 0;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+            margin: 22px 0;
         }
         
         .stat-card {
             background: white;
-            padding: 12px 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
             text-align: center;
-            flex: 1;
-            min-width: 120px;
+            transition: var(--transition);
+            border: 1px solid var(--light-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-color);
         }
         
         .stat-number {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
+            font-size: 32px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
         }
         
         .stat-title {
-            font-size: 12px;
-            color: #7f8c8d;
+            font-size: 14px;
+            color: var(--gray-dark);
+            font-weight: 600;
         }
         
         .notification {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            padding: 12px 16px;
-            border-radius: 6px;
+            top: 25px;
+            right: 25px;
+            padding: 18px 24px;
+            border-radius: var(--border-radius-sm);
             color: white;
-            background-color: var(--success-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: var(--gradient-success);
+            box-shadow: var(--shadow-xl);
             z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            max-width: 350px;
+            gap: 12px;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 420px;
+            font-weight: 600;
+            font-size: 15px;
         }
         
         .notification.show {
@@ -419,56 +587,58 @@
         }
         
         .notification.error {
-            background-color: var(--accent-color);
+            background: var(--gradient-danger);
         }
         
         .notification.firebase {
-            background-color: var(--firebase-color);
+            background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
         }
         
         .filter-section {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 18px;
+            margin-bottom: 22px;
             flex-wrap: wrap;
         }
         
         .filter-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 240px;
         }
         
-        /* قسم تسجيل الدخول */
         .login-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            background: white;
+            padding: 35px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 28px;
             text-align: center;
         }
 
         .login-form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            max-width: 400px;
+            gap: 22px;
+            max-width: 480px;
             margin: 0 auto;
         }
 
         .user-info {
-            background-color: #e8f4fc;
-            padding: 10px 15px;
-            border-radius: 8px;
+            background: white;
+            padding: 18px 24px;
+            border-radius: var(--border-radius);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 22px;
+            border: 2px solid var(--light-border);
+            box-shadow: var(--shadow-sm);
         }
 
         .user-info span {
-            font-weight: bold;
+            font-weight: 700;
             color: var(--primary-color);
+            font-size: 16px;
         }
 
         .admin-only {
@@ -481,175 +651,213 @@
 
         .user-type {
             display: flex;
-            margin-bottom: 20px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            margin-bottom: 28px;
+            border: 2px solid var(--light-border);
+            border-radius: var(--border-radius-sm);
             overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
         
         .user-type-btn {
             flex: 1;
-            padding: 10px;
+            padding: 14px;
             text-align: center;
-            background: #f8f9fa;
+            background: white;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 15px;
         }
         
         .user-type-btn.active {
-            background: var(--primary-color);
+            background: var(--gradient-primary);
             color: white;
+        }
+
+        .user-type-btn:hover:not(.active) {
+            background: var(--gray-light);
         }
         
         .admin-info {
-            background-color: #f4f9fb;
-            padding: 15px;
-            border-radius: 8px;
-            border-right: 4px solid var(--primary-color);
+            background: linear-gradient(135deg, var(--light-bg) 0%, white 100%);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            border-right: 5px solid var(--primary-color);
             text-align: right;
-            margin-top: 20px;
-            display: none;
+            margin-top: 28px;
+            box-shadow: var(--shadow-sm);
         }
         
         .admin-info h3 {
             color: var(--primary-color);
-            margin-bottom: 10px;
+            margin-bottom: 14px;
+            font-size: 18px;
+            font-weight: 700;
         }
         
         .admin-info p {
-            color: #7f8c8d;
-            font-size: 14px;
-            line-height: 1.5;
+            color: var(--gray-dark);
+            font-size: 15px;
+            line-height: 1.8;
+            font-weight: 500;
         }
         
-        /* حالة الاتصال بـ Firebase */
+        .visit-topic-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        
+        .topic-option {
+            background: white;
+            border: 2px solid var(--light-border);
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .topic-option:hover {
+            background: rgba(37, 99, 235, 0.05);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .topic-option.selected {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .selected-topics-summary {
+            background: var(--gray-light);
+            border: 2px solid var(--light-border);
+            border-radius: var(--border-radius-sm);
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            font-size: 14px;
+            min-height: 60px;
+        }
+        
+        .selected-topics-summary .topic-tag {
+            display: inline-block;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 25px;
+            padding: 6px 16px;
+            margin: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .custom-topic-input {
+            display: none;
+            margin-top: 18px;
+            padding: 18px;
+            background: white;
+            border-radius: var(--border-radius-sm);
+            border: 2px dashed var(--gray-medium);
+        }
+        
+        .custom-topic-input.show {
+            display: block;
+        }
+        
+        .topics-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+        }
+        
+        .topics-controls .btn {
+            padding: 10px 18px;
+            font-size: 14px;
+        }
+        
         .firebase-status {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
+            background: white;
+            border: 2px solid var(--light-border);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 22px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: var(--shadow-md);
         }
         
         .connection-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
         }
         
         .connection-dot {
-            width: 12px;
-            height: 12px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background-color: var(--success-color);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
         }
         
         .connection-dot.connecting {
             background-color: var(--warning-color);
             animation: pulse 1.5s infinite;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
         }
         
         .connection-dot.disconnected {
-            background-color: var(--accent-color);
+            background-color: var(--danger-color);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
         }
         
         .firebase-controls {
             display: flex;
-            gap: 10px;
+            gap: 14px;
         }
         
         .firebase-btn {
-            background-color: var(--firebase-color);
+            background: var(--gradient-primary);
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        
-        .firebase-btn.disabled {
-            background-color: #95a5a6;
-        }
-        
-        /* مؤشر المستخدمين المتصلين */
-        .online-users {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 15px;
-            min-width: 200px;
-            z-index: 999;
-            display: none;
-        }
-        
-        .online-users.show {
-            display: block;
-        }
-        
-        .online-users h4 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .user-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 0;
+            padding: 8px 16px;
+            border-radius: 25px;
             font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
         }
         
-        .user-status {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--success-color);
+        .firebase-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
         
-        /* مؤشر النشاط الفورية */
-        .activity-indicator {
-            position: fixed;
-            top: 130px;
-            right: 20px;
-            background-color: var(--firebase-color);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            box-shadow: 0 2px 10px rgba(255,111,0,0.3);
-            z-index: 1000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .activity-indicator.show {
-            transform: translateX(0);
-        }
-        
-        /* مؤشر Firebase */
         .firebase-indicator {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            font-size: 12px;
+            gap: 8px;
+            font-size: 14px;
             color: var(--firebase-color);
-            margin-left: 10px;
+            margin-left: 12px;
+            font-weight: 600;
         }
         
         .firebase-indicator .pulse {
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             background-color: var(--firebase-color);
             border-radius: 50%;
             animation: pulse 1.5s infinite;
+            box-shadow: 0 0 8px rgba(251, 146, 60, 0.5);
         }
         
         @keyframes pulse {
@@ -658,30 +866,30 @@
             100% { transform: scale(0.95); opacity: 0.7; }
         }
         
-        /* حالة المزامنة */
         .sync-status {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--firebase-color);
+            bottom: 30px;
+            right: 30px;
+            background: var(--gradient-primary);
             color: white;
-            padding: 12px 18px;
-            border-radius: 25px;
+            padding: 16px 26px;
+            border-radius: 35px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(255,111,0,0.3);
+            gap: 14px;
+            font-size: 15px;
+            box-shadow: var(--shadow-xl);
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            font-weight: 600;
         }
         
         .sync-status.connecting {
-            background-color: var(--warning-color);
+            background: var(--gradient-warning);
         }
         
         .sync-status.disconnected {
-            background-color: var(--accent-color);
+            background: var(--gradient-danger);
         }
         
         .sync-status.syncing i {
@@ -693,15 +901,14 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* تحسينات للشاشات */
-        @media (min-width: 768px) {
+        @media (min-width: 992px) {
             .container {
-                max-width: 95%;
+                margin: 20px auto;
             }
             
             .app-content {
                 flex-direction: row;
-                padding: 20px;
+                padding: 35px;
             }
             
             .form-section {
@@ -721,7 +928,6 @@
             }
         }
         
-        /* أنماط إضافية */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -729,17 +935,18 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
             z-index: 3000;
             justify-content: center;
             align-items: center;
         }
         
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--firebase-color);
+            width: 70px;
+            height: 70px;
+            border: 6px solid var(--light-border);
+            border-top: 6px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -751,91 +958,150 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(3px);
             z-index: 2000;
             justify-content: center;
             align-items: center;
         }
         
         .confirmation-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            max-width: 400px;
+            background: white;
+            padding: 35px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-xl);
+            max-width: 480px;
             width: 90%;
             text-align: center;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confirmation-content h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+        }
+
+        .confirmation-content p {
+            font-size: 16px;
+            color: var(--gray-dark);
+            margin-bottom: 25px;
+            line-height: 1.6;
         }
         
         .confirmation-buttons {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 18px;
+            margin-top: 28px;
         }
         
         .current-filter {
-            background-color: #e8f4fc;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--light-bg) 0%, white 100%);
+            padding: 18px 24px;
+            border-radius: var(--border-radius);
+            margin-bottom: 22px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 2px solid var(--light-border);
+            box-shadow: var(--shadow-sm);
         }
         
         .current-filter span {
-            font-weight: bold;
+            font-weight: 700;
             color: var(--primary-color);
+            font-size: 15px;
         }
         
         .remove-filter {
-            background-color: var(--accent-color);
+            background: var(--gradient-danger);
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 8px 16px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
+            transition: var(--transition);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .remove-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
         
         .form-error {
-            color: var(--accent-color);
-            font-size: 12px;
-            margin-top: 5px;
+            color: var(--danger-color);
+            font-size: 13px;
+            margin-top: 8px;
             display: none;
+            font-weight: 600;
         }
         
         .form-group.error input, 
         .form-group.error select, 
         .form-group.error textarea {
-            border-color: var(--accent-color);
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
         }
-        
-        /* إعداد Firebase */
-        .firebase-setup {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .firebase-setup h3 {
-            color: var(--warning-color);
-            margin-bottom: 10px;
-        }
-        
-        .firebase-setup p {
-            color: #856404;
-            font-size: 14px;
-            line-height: 1.5;
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .logo-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            header h1 {
+                font-size: 20px;
+            }
+
+            .app-content {
+                padding: 20px;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filter-section {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- مؤشر التحميل -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
     </div>
@@ -847,13 +1113,12 @@
                     <i class="fas fa-mosque"></i>
                 </div>
                 <div class="header-content">
-                    <h1>تقارير الزيارات التفقدية للمساجد <span class="firebase-indicator" id="firebaseIndicator"><span class="pulse"></span> Firebase</span></h1>
+                    <h1>بوابة تقارير الزيارات التفقدية للمساجد <span class="firebase-indicator" id="firebaseIndicator"><span class="pulse"></span> Firebase</span></h1>
                     <p>المندوبية الإقليمية للشؤون الإسلامية - مكناس</p>
                 </div>
             </div>
         </header>
 
-        <!-- قسم تسجيل الدخول -->
         <div id="loginSection" class="login-section">
             <h2 class="section-title">تسجيل الدخول</h2>
             
@@ -876,6 +1141,7 @@
                         <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
                         <option value="اليوسفي ياسين">اليوسفي ياسين</option>
                         <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
+                        <option value="متفقد جديد">متفقد جديد</option>
                     </select>
                 </div>
                 
@@ -898,7 +1164,6 @@
             </div>
         </div>
 
-        <!-- معلومات المستخدم بعد تسجيل الدخول -->
         <div id="userInfo" class="user-info" style="display: none;">
             <div>
                 <span>مرحباً, </span>
@@ -910,12 +1175,11 @@
             </button>
         </div>
 
-        <!-- معلومات الاتصال بـ Firebase -->
-        <div id="firebaseStatus" class="firebase-status" style="display: none;">
+         <div id="firebaseStatus" class="firebase-status" style="display: none;">
             <div class="connection-info">
                 <div class="connection-dot" id="connectionDot"></div>
                 <span id="connectionText">متصل بـ Firebase</span>
-                <span id="onlineUsersCount">(0 مستخدمين متصلين)</span>
+                <span id="onlineUsersCount">( مستخدمين متصلين)</span>
             </div>
             <div class="firebase-controls">
                 <button class="firebase-btn" onclick="showOnlineUsers()">المستخدمين المتصلين</button>
@@ -923,20 +1187,6 @@
             </div>
         </div>
 
-        <!-- المستخدمين المتصلين -->
-        <div class="online-users" id="onlineUsers">
-            <h4>المستخدمين المتصلين</h4>
-            <div id="usersList">
-                <!-- سيتم ملؤها بالبيانات من Firebase -->
-            </div>
-        </div>
-
-        <!-- مؤشر النشاط -->
-        <div class="activity-indicator" id="activityIndicator">
-            <i class="fas fa-user-edit"></i>
-            <span id="activityText">يقوم أحمد بإضافة تقرير جديد</span>
-        </div>
-        
         <div class="stats" style="display: none;">
             <div class="stat-card">
                 <div class="stat-number" id="total-reports">0</div>
@@ -1003,11 +1253,12 @@
                             <option value="شهراوي محمد">شهراوي محمد</option>
                             <option value="بنعكي محمد">بنعكي محمد</option>
                             <option value="غزلان فؤاد">غزلان فؤاد</option>
-                            <option value="ناصفي فؤاد">ناصфи فؤاد</option>
+                            <option value="ناصفي فؤاد">ناصفي فؤاد</option>
                             <option value="راجعي خالد">راجعي خالد</option>
                             <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
                             <option value="اليوسفي ياسين">اليوسفي ياسين</option>
                             <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
+                            <option value="متفقد جديد">متفقد جديد</option>
                         </select>
                         <div class="form-error" id="inspector-error">يرجى اختيار اسم المتفقد</div>
                     </div>
@@ -1026,6 +1277,7 @@
                             <option value="D646329">D646329</option>
                             <option value="D559129">D559129</option>
                             <option value="D490452">D490452</option>
+                            <option value="D00000">D00000</option>
                         </select>
                         <div class="form-error" id="employee-id-error">يرجى اختيار رقم البطاقة الوطنية</div>
                     </div>
@@ -1086,8 +1338,37 @@
                 
                 <div class="form-group required">
                     <label for="visit-topic">المهمة أو المهام موضوع الزيارة:</label>
-                    <textarea id="visit-topic" required placeholder="أدخل موضوع الزيارة"></textarea>
-                    <div class="form-error" id="visit-topic-error">يرجى إدخال موضوع الزيارة</div>
+                    
+                    <div class="selected-topics-summary" id="selected-topics-summary">
+                    </div>
+                    
+                    <div class="visit-topic-options" id="visit-topic-options">
+                       <div class="topic-option" data-value=" تتبع أحوال المساجد ">تتبع أحوال المساجد</div>                
+                        <div class="topic-option" data-value=" تتبع سير الشعائر الدينية ">تتبع سير الشعائر الدينية</div>
+                        <div class="topic-option" data-value="تتبع مواظبة القيمين الدينيين ">تتبع مواظبة القيمين الدينيين</div>
+                        <div class="topic-option" data-value="تتبع قراءة الحزب الراتب ">تتبع قراءة الحزب الراتب</div>
+                        <div class="topic-option" data-value="تتبع خطة تسديد التبليغ ">تتبع خطة تسديد التبليغ</div>
+                        <div class="topic-option" data-value=" تتبع سير الشعائر الدينية ومواظبة القيمين الدينيين ">تتبع سير الشعائر الدينية ومواظبة القيمين الدينيين</div>
+                    </div>
+                    
+                    <div class="topics-controls">
+                        <button class="btn btn-primary" onclick="selectAllTopics()">
+                            <i class="fas fa-check-double"></i> اختيار الكل
+                        </button>
+                        <button class="btn btn-warning" onclick="clearAllTopics()">
+                            <i class="fas fa-times"></i> إلغاء الكل
+                        </button>
+                    </div>
+                    
+                    <textarea id="visit-topic" required placeholder="سيتم ملؤه تلقائياً بالمواضيع المختارة" style="display: none;"></textarea>
+                    <div class="form-error" id="visit-topic-error">يرجى اختيار موضوع واحد على الأقل للزيارة</div>
+                    
+                    <div class="custom-topic-input" id="custom-topic-input">
+                        <input type="text" id="custom-topic-text" placeholder="أدخل موضوع الزيارة المخصص">
+                        <button type="button" class="btn btn-primary" onclick="addCustomTopic()" style="margin-top: 10px; padding: 8px 16px; font-size: 13px;">
+                            <i class="fas fa-plus"></i> إضافة
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="form-group required">
@@ -1119,7 +1400,6 @@
             <div class="table-section">
                 <h2 class="section-title">التقارير المسجلة</h2>
                 
-                <!-- فلتر التقرير الحالي -->
                 <div id="currentFilterInfo" class="current-filter" style="display: none;">
                     <span id="filterText">يتم عرض التقارير الخاصة بـ: </span>
                     <button class="remove-filter" onclick="removeFilter()">إلغاء التصفية</button>
@@ -1140,6 +1420,7 @@
                             <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
                             <option value="اليوسفي ياسين">اليوسفي ياسين</option>
                             <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
+                            <option value="متفقد جديد">متفقد جديد</option>
                         </select>
                     </div>
                     
@@ -1184,12 +1465,11 @@
                             </tr>
                         </thead>
                         <tbody id="reportsTable">
-                            <!-- سيتم ملؤها بالبيانات من Firebase -->
                         </tbody>
                     </table>
                 </div>
                 
-                <div class="actions" style="margin-top: 15px;">
+                <div class="actions" style="margin-top: 20px;">
                     <button class="btn btn-primary" onclick="refreshData()">
                         <i class="fas fa-sync-alt"></i> تحديث البيانات
                     </button>
@@ -1208,11 +1488,10 @@
         </footer>
     </div>
 
-    <!-- مربع حوار التأكيد -->
     <div class="confirmation-modal" id="confirmationModal">
         <div class="confirmation-content">
             <h3 id="confirmationTitle">تأكيد الإجراء</h3>
-            <p id="confirmationMessage">هل أنت متأكد من أنك تريد تنفيذ هذا الإجراء?</p>
+            <p id="confirmationMessage">هل أنت متأكد من أنك تريد تنفيذ هذا الإجراء؟</p>
             <div class="confirmation-buttons">
                 <button class="btn btn-danger" id="confirmAction">نعم</button>
                 <button class="btn btn-primary" onclick="hideConfirmation()">إلغاء</button>
@@ -1220,20 +1499,17 @@
         </div>
     </div>
 
-    <!-- الإشعارات -->
     <div class="notification" id="notification">
         <i class="fas fa-check-circle"></i>
         <span id="notification-text"></span>
     </div>
 
-    <!-- حالة المزامنة مع Firebase -->
     <div class="sync-status" id="syncStatus">
         <i class="fas fa-database"></i>
         <span>Firebase</span>
     </div>
 
     <script>
-        // ======== متغيرات النظام ========
         let reports = [];
         let currentUser = null;
         let userRole = null;
@@ -1243,8 +1519,8 @@
         let formChanged = false;
         let firebaseReady = false;
         let onlineUsers = new Map();
+        let selectedTopics = [];
         
-        // متغيرات Firebase
         let database = null;
         let auth = null;
         let reportsRef = null;
@@ -1252,36 +1528,135 @@
         let activitiesRef = null;
         let userId = null;
         
-        // ======== عناصر DOM ========
         const notification = document.getElementById('notification');
         const notificationText = document.getElementById('notification-text');
         const syncStatus = document.getElementById('syncStatus');
         const loginSection = document.getElementById('loginSection');
         const userInfo = document.getElementById('userInfo');
         const firebaseStatus = document.getElementById('firebaseStatus');
-        const onlineUsersPanel = document.getElementById('onlineUsers');
-        const activityIndicator = document.getElementById('activityIndicator');
-        const firebaseIndicator = document.getElementById('firebaseIndicator');
+        const statsSection = document.querySelector('.stats');
+        const appContent = document.querySelector('.app-content');
+        const footer = document.querySelector('footer');
         
-        // ======== تهيئة النظام ========
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('جاري تهيئة النظام...');
             showLoading();
-            
-            // انتظار تحميل Firebase
-            setTimeout(() => {
-                initializeFirebase();
-            }, 1000);
             
             setupEventListeners();
             setCurrentDate();
+            setupTopicOptions();
+            
+            setTimeout(() => {
+                if (window.firebaseReady) {
+                    initializeFirebase();
+                } else {
+                    console.log('Firebase غير جاهز، استخدام التخزين المحلي');
+                    initializeLocalStorage();
+                }
+            }, 1000);
         });
         
-        // ======== تهيئة Firebase (مع تحسينات للأخطاء) ========
+        function setupTopicOptions() {
+            const topicOptions = document.querySelectorAll('.topic-option');
+            topicOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const topicValue = this.getAttribute('data-value');
+                    
+                    if (topicValue === 'تفقد أخرى') {
+                        document.getElementById('custom-topic-input').classList.add('show');
+                        return;
+                    }
+                    
+                    this.classList.toggle('selected');
+                    
+                    if (this.classList.contains('selected')) {
+                        if (!selectedTopics.includes(topicValue)) {
+                            selectedTopics.push(topicValue);
+                        }
+                    } else {
+                        const index = selectedTopics.indexOf(topicValue);
+                        if (index > -1) {
+                            selectedTopics.splice(index, 1);
+                        }
+                    }
+                    
+                    updateSelectedTopicsDisplay();
+                    formChanged = true;
+                });
+            });
+        }
+        
+        function updateSelectedTopicsDisplay() {
+            const summaryEl = document.getElementById('selected-topics-summary');
+            const textareaEl = document.getElementById('visit-topic');
+            
+            if (selectedTopics.length === 0) {
+                summaryEl.innerHTML = '<span style="color: #64748b;">لم يتم اختيار أي مواضيع بعد</span>';
+                textareaEl.value = '';
+            } else {
+                summaryEl.innerHTML = selectedTopics.map(topic => 
+                    `<span class="topic-tag">${topic}</span>`
+                ).join('');
+                textareaEl.value = selectedTopics.join('، ');
+            }
+        }
+        
+        function selectAllTopics() {
+            const topicOptions = document.querySelectorAll('.topic-option');
+            selectedTopics = [];
+            
+            topicOptions.forEach(option => {
+                const topicValue = option.getAttribute('data-value');
+                if (topicValue !== 'تفقد أخرى') {
+                    option.classList.add('selected');
+                    if (!selectedTopics.includes(topicValue)) {
+                        selectedTopics.push(topicValue);
+                    }
+                }
+            });
+            
+            updateSelectedTopicsDisplay();
+            formChanged = true;
+            showNotification('تم اختيار جميع المواضيع');
+        }
+        
+        function clearAllTopics() {
+            const topicOptions = document.querySelectorAll('.topic-option');
+            topicOptions.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            selectedTopics = [];
+            updateSelectedTopicsDisplay();
+            formChanged = true;
+            showNotification('تم إلغاء اختيار جميع المواضيع');
+        }
+        
+        function addCustomTopic() {
+            const customTopicText = document.getElementById('custom-topic-text');
+            if (!customTopicText || !customTopicText.value.trim()) {
+                showNotification('يرجى إدخال موضوع الزيارة المخصص', true);
+                return;
+            }
+            
+            const customTopic = customTopicText.value.trim();
+            
+            if (!selectedTopics.includes(customTopic)) {
+                selectedTopics.push(customTopic);
+            }
+            
+            updateSelectedTopicsDisplay();
+            customTopicText.value = '';
+            document.getElementById('custom-topic-input').classList.remove('show');
+            
+            formChanged = true;
+            showNotification('تم إضافة الموضوع المخصص');
+        }
+        
         async function initializeFirebase() {
             try {
                 console.log('بدء تهيئة Firebase...');
                 
-                // التحقق من توفر Firebase
                 if (!window.firebase) {
                     throw new Error('Firebase غير متوفر');
                 }
@@ -1289,12 +1664,10 @@
                 database = window.firebase.database;
                 auth = window.firebase.auth;
                 
-                // إعداد المراجع
                 reportsRef = window.firebase.ref(database, 'reports');
                 onlineUsersRef = window.firebase.ref(database, 'onlineUsers');
                 activitiesRef = window.firebase.ref(database, 'activities');
                 
-                // تسجيل دخول مجهول للمصادقة (مع try-catch إضافي)
                 try {
                     await window.firebase.signInAnonymously(auth);
                     console.log('تم تسجيل الدخول المجهول');
@@ -1303,7 +1676,6 @@
                     throw new Error('فشل في تسجيل الدخول المجهول: ' + authError.message);
                 }
                 
-                // مراقبة حالة المصادقة
                 window.firebase.onAuthStateChanged(auth, (user) => {
                     if (user) {
                         userId = user.uid;
@@ -1323,15 +1695,12 @@
             } catch (error) {
                 console.error('خطأ في تهيئة Firebase:', error);
                 updateFirebaseStatus('error');
-                
-                // استخدام التخزين المحلي كبديل
-                showNotification('تعذر الاتصال بـ Firebase، سيتم استخدام التخزين المحلي: ' + error.message, true, 'firebase');
+                showNotification('تعذر الاتصال بـ Firebase، سيتم استخدام التخزين المحلي', true, 'firebase');
                 initializeLocalStorage();
                 hideLoading();
             }
         }
         
-        // ======== الدالة المفقودة للتخزين المحلي ========
         function initializeLocalStorage() {
             console.log('تهيئة التخزين المحلي...');
             reports = JSON.parse(localStorage.getItem('mosqueReports') || '[]');
@@ -1339,13 +1708,12 @@
             updateStats();
             firebaseReady = false;
             updateFirebaseStatus('disconnected');
+            hideLoading();
         }
         
-        // ======== إعداد مستمعي Firebase ========
         function setupFirebaseListeners() {
             if (!firebaseReady) return;
             
-            // مراقبة التقارير
             window.firebase.onValue(reportsRef, (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -1353,31 +1721,11 @@
                         id: key,
                         ...data[key]
                     }));
-                    
                     updateLocalReports(firebaseReports);
-                }
-            });
-            
-            // مراقبة المستخدمين المتصلين
-            window.firebase.onValue(onlineUsersRef, (snapshot) => {
-                const data = snapshot.val();
-                updateOnlineUsersDisplay(data || {});
-            });
-            
-            // مراقبة الأنشطة
-            window.firebase.onValue(activitiesRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    const activities = Object.values(data);
-                    const latestActivity = activities[activities.length - 1];
-                    if (latestActivity && latestActivity.user !== currentUser) {
-                        showUserActivity(latestActivity);
-                    }
                 }
             });
         }
         
-        // ======== تحديث التقارير المحلية ========
         function updateLocalReports(firebaseReports) {
             const previousCount = reports.length;
             reports = firebaseReports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -1385,17 +1733,13 @@
             loadReports();
             updateStats();
             
-            // إشعار بالتقارير الجديدة
             if (reports.length > previousCount) {
                 const newCount = reports.length - previousCount;
                 showNotification(`تم إضافة ${newCount} تقرير جديد`, false, 'firebase');
-                
-                // تمييز التقارير الجديدة
                 highlightNewRecords(reports.slice(0, newCount));
             }
         }
         
-        // ======== وظائف تسجيل الدخول ========
         function setUserType(type) {
             userType = type;
             const btnInspector = document.getElementById('btn-inspector');
@@ -1408,7 +1752,7 @@
             const adminInfo = document.getElementById('admin-info');
             
             if (type === 'admin') {
-                if (usernameLabel) usernameLabel.textContent = 'اسم المدير';
+                if (usernameLabel) usernameLabel.textContent = 'اسم المنسق';
                 if (usernameSelect) usernameSelect.innerHTML = '<option value="العمراوي نورالدين">العمراوي نورالدين</option>';
                 if (adminInfo) adminInfo.style.display = 'block';
             } else {
@@ -1424,6 +1768,8 @@
                     <option value="العروسي عبد العزيز">العروسي عبد العزيز</option>
                     <option value="اليوسفي ياسين">اليوسفي ياسين</option>
                     <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
+                    <option value="متفقد جديد">متفقد جديد</option>
+
                 `;
                 if (adminInfo) adminInfo.style.display = 'none';
             }
@@ -1467,7 +1813,6 @@
                 return;
             }
             
-            // التحقق من بيانات الدخول
             let loginValid = false;
             
             if (userType === 'admin') {
@@ -1480,20 +1825,15 @@
                 currentUser = username;
                 userRole = userType === 'admin' ? 'admin' : 'inspector';
                 
-                // حفظ الجلسة
                 sessionStorage.setItem('currentUser', currentUser);
                 sessionStorage.setItem('userRole', userRole);
                 
-                // إضافة المستخدم للقائمة المتصلة في Firebase
                 if (firebaseReady) {
                     await addUserToOnlineList();
                 }
                 
                 showAppContent();
                 showNotification('تم تسجيل الدخول بنجاح!', false, 'firebase');
-                
-                // إعلان النشاط
-                await announceUserActivity('login');
                 
             } else {
                 showNotification('بيانات الدخول غير صحيحة', true);
@@ -1502,16 +1842,11 @@
         
         async function logout() {
             showConfirmation('تسجيل الخروج', 'هل أنت متأكد من أنك تريد تسجيل الخروج؟', async function() {
-                // إعلان الخروج
-                await announceUserActivity('logout');
-                
-                // إزالة المستخدم من القائمة المتصلة
                 if (firebaseReady && userId) {
                     const userRef = window.firebase.ref(database, `onlineUsers/${userId}`);
                     await window.firebase.remove(userRef);
                 }
                 
-                // مسح البيانات
                 currentUser = null;
                 userRole = null;
                 userId = null;
@@ -1522,7 +1857,6 @@
             });
         }
         
-        // ======== إدارة المستخدمين المتصلين ========
         async function addUserToOnlineList() {
             if (!firebaseReady || !userId) return;
             
@@ -1535,88 +1869,15 @@
             };
             
             await window.firebase.set(userRef, userData);
-            
-            // إعداد إزالة تلقائية عند قطع الاتصال
             window.firebase.onDisconnect(userRef).remove();
         }
         
-        function updateOnlineUsersDisplay(onlineUsersData) {
-            const onlineUsersCount = document.getElementById('onlineUsersCount');
-            if (onlineUsersCount) {
-                const count = Object.keys(onlineUsersData).length;
-                onlineUsersCount.textContent = `(${count} مستخدمين متصلين)`;
-            }
-            
-            const usersList = document.getElementById('usersList');
-            if (!usersList) return;
-            usersList.innerHTML = '';
-            
-            Object.values(onlineUsersData).forEach(user => {
-                const userItem = document.createElement('div');
-                userItem.className = 'user-item';
-                userItem.innerHTML = `
-                    <div class="user-status"></div>
-                    <span>${user.name} (${user.role === 'admin' ? 'مدير' : 'متفقد'})</span>
-                `;
-                usersList.appendChild(userItem);
-            });
-        }
-        
-        // ======== الأنشطة ========
-        async function announceUserActivity(action, details = {}) {
-            if (!firebaseReady) return;
-            
-            const activity = {
-                user: currentUser,
-                action: action,
-                details: details,
-                timestamp: window.firebase.serverTimestamp()
-            };
-            
-            await window.firebase.push(activitiesRef, activity);
-        }
-        
-        function showUserActivity(activity) {
-            const activityTextEl = document.getElementById('activityText');
-            if (activityTextEl) {
-                const activityText = getActivityText(activity);
-                activityTextEl.textContent = activityText;
-            }
-            
-            activityIndicator.classList.add('show');
-            
-            setTimeout(() => {
-                activityIndicator.classList.remove('show');
-            }, 3000);
-        }
-        
-        function getActivityText(activity) {
-            switch(activity.action) {
-                case 'login':
-                    return `${activity.user} دخل إلى النظام`;
-                case 'logout':
-                    return `${activity.user} خرج من النظام`;
-                case 'add_report':
-                    return `${activity.user} أضاف تقريراً جديداً`;
-                case 'edit_report':
-                    return `${activity.user} عدّل تقريراً`;
-                case 'delete_report':
-                    return `${activity.user} حذف تقريراً`;
-                default:
-                    return `${activity.user} قام بنشاط جديد`;
-            }
-        }
-        
-        // ======== وظائف الواجهة (مع checks للـ DOM) ========
         function showAppContent() {
             if (loginSection) loginSection.style.display = 'none';
             if (userInfo) userInfo.style.display = 'flex';
             if (firebaseStatus) firebaseStatus.style.display = 'flex';
-            const statsSection = document.querySelector('.stats');
-            if (statsSection) statsSection.style.display = 'flex';
-            const appContent = document.querySelector('.app-content');
+            if (statsSection) statsSection.style.display = 'grid';
             if (appContent) appContent.style.display = 'flex';
-            const footer = document.querySelector('footer');
             if (footer) footer.style.display = 'block';
             
             const currentUserEl = document.getElementById('currentUser');
@@ -1654,11 +1915,8 @@
             if (loginSection) loginSection.style.display = 'block';
             if (userInfo) userInfo.style.display = 'none';
             if (firebaseStatus) firebaseStatus.style.display = 'none';
-            const statsSection = document.querySelector('.stats');
             if (statsSection) statsSection.style.display = 'none';
-            const appContent = document.querySelector('.app-content');
             if (appContent) appContent.style.display = 'none';
-            const footer = document.querySelector('footer');
             if (footer) footer.style.display = 'none';
             
             const usernameEl = document.getElementById('username');
@@ -1668,7 +1926,6 @@
             setUserType('inspector');
         }
         
-        // ======== وظائف النموذج ========
         function validateForm() {
             let isValid = true;
             
@@ -1685,7 +1942,7 @@
             const requiredFields = [
                 'number', 'month', 'inspector', 'employee-id', 
                 'mosque-name', 'info-code', 'community', 'visit-date',
-                'visit-topic', 'notes'
+                'notes'
             ];
             
             requiredFields.forEach(field => {
@@ -1699,6 +1956,14 @@
                 }
             });
             
+            if (selectedTopics.length === 0) {
+                isValid = false;
+                const visitTopicGroup = document.getElementById('visit-topic').closest('.form-group');
+                if (visitTopicGroup) visitTopicGroup.classList.add('error');
+                const visitTopicError = document.getElementById('visit-topic-error');
+                if (visitTopicError) visitTopicError.style.display = 'block';
+            }
+            
             return isValid;
         }
         
@@ -1706,7 +1971,7 @@
             if (validateForm()) {
                 submitForm();
             } else {
-                showNotification('يرجى ملء جميع الحقول الإلزامية', true);
+                showNotification('يرجى ملء جميع الحقول الإلزامية واختيار موضوع واحد على الأقل', true);
                 const firstError = document.querySelector('.form-group.error');
                 if (firstError) {
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1722,39 +1987,20 @@
             
             updateFirebaseStatus('syncing');
             
-            const numberEl = document.getElementById('number');
-            const regionalEl = document.getElementById('regional-delegation');
-            const monthEl = document.getElementById('month');
-            const inspectorEl = document.getElementById('inspector');
-            const employeeIdEl = document.getElementById('employee-id');
-            const mosqueNameEl = document.getElementById('mosque-name');
-            const infoCodeEl = document.getElementById('info-code');
-            const communityEl = document.getElementById('community');
-            const visitDateEl = document.getElementById('visit-date');
-            const visitTopicEl = document.getElementById('visit-topic');
-            const notesEl = document.getElementById('notes');
-            const actionsEl = document.getElementById('actions');
-            const attachmentsEl = document.getElementById('attachments');
-            
-            if (!numberEl || !regionalEl || !monthEl || !inspectorEl || !employeeIdEl || !mosqueNameEl || !infoCodeEl || !communityEl || !visitDateEl || !visitTopicEl || !notesEl || !actionsEl || !attachmentsEl) {
-                showNotification('خطأ في تحميل النموذج', true);
-                return;
-            }
-            
             const formData = {
-                number: numberEl.value,
-                regionalDelegation: regionalEl.value,
-                month: monthEl.value,
-                inspector: inspectorEl.value,
-                employeeId: employeeIdEl.value,
-                mosqueName: mosqueNameEl.value,
-                infoCode: infoCodeEl.value,
-                community: communityEl.value,
-                visitDate: visitDateEl.value,
-                visitTopic: visitTopicEl.value,
-                notes: notesEl.value,
-                actions: actionsEl.value,
-                attachments: attachmentsEl.value,
+                number: document.getElementById('number').value,
+                regionalDelegation: document.getElementById('regional-delegation').value,
+                month: document.getElementById('month').value,
+                inspector: document.getElementById('inspector').value,
+                employeeId: document.getElementById('employee-id').value,
+                mosqueName: document.getElementById('mosque-name').value,
+                infoCode: document.getElementById('info-code').value,
+                community: document.getElementById('community').value,
+                visitDate: document.getElementById('visit-date').value,
+                visitTopic: document.getElementById('visit-topic').value,
+                notes: document.getElementById('notes').value,
+                actions: document.getElementById('actions').value,
+                attachments: document.getElementById('attachments').value,
                 createdAt: new Date().toISOString(),
                 createdBy: currentUser
             };
@@ -1772,10 +2018,6 @@
                 }
                 
                 clearForm();
-                await announceUserActivity('add_report', { 
-                    mosqueName: formData.mosqueName 
-                });
-                
                 updateFirebaseStatus('connected');
                 formChanged = false;
                 
@@ -1787,7 +2029,7 @@
         }
         
         function clearForm() {
-            const fields = ['number', 'mosque-name', 'info-code', 'visit-topic', 'notes', 'actions', 'attachments'];
+            const fields = ['number', 'mosque-name', 'info-code', 'notes', 'actions', 'attachments'];
             fields.forEach(field => {
                 const el = document.getElementById(field);
                 if (el) el.value = '';
@@ -1803,11 +2045,14 @@
                 if (el) el.classList.remove('error');
             });
             
+            clearAllTopics();
+            document.getElementById('custom-topic-input').classList.remove('show');
+            document.getElementById('custom-topic-text').value = '';
+            
             setCurrentDate();
             formChanged = false;
         }
         
-        // ======== وظائف الجدول ========
         function loadReports() {
             const table = document.getElementById('reportsTable');
             if (!table) return;
@@ -1886,31 +2131,34 @@
                 return;
             }
             
-            const numberEl = document.getElementById('number');
-            const monthEl = document.getElementById('month');
-            const inspectorEl = document.getElementById('inspector');
-            const employeeIdEl = document.getElementById('employee-id');
-            const mosqueNameEl = document.getElementById('mosque-name');
-            const infoCodeEl = document.getElementById('info-code');
-            const communityEl = document.getElementById('community');
-            const visitDateEl = document.getElementById('visit-date');
-            const visitTopicEl = document.getElementById('visit-topic');
-            const notesEl = document.getElementById('notes');
-            const actionsEl = document.getElementById('actions');
-            const attachmentsEl = document.getElementById('attachments');
+            document.getElementById('number').value = report.number || '';
+            document.getElementById('month').value = report.month || '';
+            document.getElementById('inspector').value = report.inspector || '';
+            document.getElementById('employee-id').value = report.employeeId || '';
+            document.getElementById('mosque-name').value = report.mosqueName || '';
+            document.getElementById('info-code').value = report.infoCode || '';
+            document.getElementById('community').value = report.community || '';
+            document.getElementById('visit-date').value = report.visitDate || '';
+            document.getElementById('visit-topic').value = report.visitTopic || '';
+            document.getElementById('notes').value = report.notes || '';
+            document.getElementById('actions').value = report.actions || '';
+            document.getElementById('attachments').value = report.attachments || '';
             
-            if (numberEl) numberEl.value = report.number || '';
-            if (monthEl) monthEl.value = report.month || '';
-            if (inspectorEl) inspectorEl.value = report.inspector || '';
-            if (employeeIdEl) employeeIdEl.value = report.employeeId || '';
-            if (mosqueNameEl) mosqueNameEl.value = report.mosqueName || '';
-            if (infoCodeEl) infoCodeEl.value = report.infoCode || '';
-            if (communityEl) communityEl.value = report.community || '';
-            if (visitDateEl) visitDateEl.value = report.visitDate || '';
-            if (visitTopicEl) visitTopicEl.value = report.visitTopic || '';
-            if (notesEl) notesEl.value = report.notes || '';
-            if (actionsEl) actionsEl.value = report.actions || '';
-            if (attachmentsEl) attachmentsEl.value = report.attachments || '';
+            if (report.visitTopic) {
+                const topics = report.visitTopic.split('، ');
+                selectedTopics = topics;
+                updateSelectedTopicsDisplay();
+                
+                const topicOptions = document.querySelectorAll('.topic-option');
+                topicOptions.forEach(option => {
+                    const topicValue = option.getAttribute('data-value');
+                    if (topics.includes(topicValue)) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
+            }
             
             deleteReport(id, false);
             showNotification('يمكنك الآن تعديل التقرير وإعادة حفظه');
@@ -1936,8 +2184,6 @@
         async function deleteReport(id, showNotif = true) {
             updateFirebaseStatus('syncing');
             
-            const report = reports.find(r => r.id === id);
-            
             try {
                 if (firebaseReady) {
                     const reportRef = window.firebase.ref(database, `reports/${id}`);
@@ -1950,10 +2196,7 @@
                 }
                 
                 if (showNotif) {
-                    await announceUserActivity('delete_report', { 
-                        mosqueName: report?.mosqueName 
-                    });
-                    showNotification('تم حذف التقرير من جميع الأجهزة', false, 'firebase');
+                    showNotification('تم حذف التقرير', false, 'firebase');
                 }
                 
                 updateFirebaseStatus('connected');
@@ -1965,7 +2208,6 @@
             }
         }
         
-        // ======== وظائف التصفية ========
         function filterByInspector() {
             const filterInspector = document.getElementById('filter-inspector');
             if (!filterInspector) return;
@@ -2019,7 +2261,6 @@
             loadReports();
         }
         
-        // ======== وظائف مساعدة ========
         function updateStats() {
             const totalReportsEl = document.getElementById('total-reports');
             const thisMonthEl = document.getElementById('this-month');
@@ -2056,19 +2297,11 @@
             if (savedUser && savedRole) {
                 currentUser = savedUser;
                 userRole = savedRole;
-                // تحقق من جاهزية DOM
                 if (document.readyState === 'complete') {
                     showAppContent();
                     if (firebaseReady) {
                         addUserToOnlineList();
                     }
-                } else {
-                    document.addEventListener('DOMContentLoaded', () => {
-                        showAppContent();
-                        if (firebaseReady) {
-                            addUserToOnlineList();
-                        }
-                    }, { once: true });
                 }
             }
         }
@@ -2080,9 +2313,9 @@
                     rows.forEach(row => {
                         const cells = row.querySelectorAll('td');
                         if (cells.length > 0 && cells[0].textContent.trim() === (report.number || '').toString().trim()) {
-                            row.classList.add('new-record');
+                            row.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
                             setTimeout(() => {
-                                row.classList.remove('new-record');
+                                row.style.backgroundColor = '';
                             }, 3000);
                         }
                     });
@@ -2090,7 +2323,6 @@
             }, 500);
         }
         
-        // ======== وظائف Firebase ========
         function updateFirebaseStatus(status) {
             const connectionDot = document.getElementById('connectionDot');
             const connectionText = document.getElementById('connectionText');
@@ -2137,7 +2369,6 @@
                     throw new Error('Firebase غير جاهز');
                 }
                 
-                // اختبار الكتابة والقراءة
                 const testRef = window.firebase.ref(database, 'test');
                 await window.firebase.set(testRef, { timestamp: Date.now() });
                 await window.firebase.remove(testRef);
@@ -2153,16 +2384,9 @@
         }
         
         function showOnlineUsers() {
-            const panel = document.getElementById('onlineUsers');
-            if (panel) {
-                panel.classList.toggle('show');
-                setTimeout(() => {
-                    panel.classList.remove('show');
-                }, 5000);
-            }
+            showNotification('ميزة عرض المستخدمين المتصلين قيد التطوير', false, 'firebase');
         }
         
-        // ======== وظائف العرض والإشعارات ========
         function showNotification(message, isError = false, type = 'normal') {
             if (!notificationText || !notification) return;
             notificationText.textContent = message;
@@ -2241,7 +2465,6 @@
                     showNotification('تم مسح جميع البيانات المحلية', false);
                 }
                 
-                await announceUserActivity('clear_all');
                 updateFirebaseStatus('connected');
                 
             } catch (error) {
@@ -2255,10 +2478,8 @@
             updateFirebaseStatus('syncing');
             
             if (firebaseReady) {
-                // البيانات تتحدث تلقائياً مع Firebase
                 showNotification('البيانات محدثة تلقائياً مع Firebase', false, 'firebase');
             } else {
-                // تحديث من التخزين المحلي
                 reports = JSON.parse(localStorage.getItem('mosqueReports') || '[]');
                 loadReports();
                 updateStats();
@@ -2321,7 +2542,6 @@
             }
         }
         
-        // ======== إعداد مستمعي الأحداث ========
         function setupEventListeners() {
             const passwordEl = document.getElementById('password');
             if (passwordEl) {
@@ -2342,14 +2562,6 @@
                 if (formChanged) {
                     e.preventDefault();
                     e.returnValue = 'لديك تغييرات غير محفوظة. هل تريد المغادرة؟';
-                }
-            });
-            
-            window.addEventListener('beforeunload', async function() {
-                if (currentUser && firebaseReady && userId) {
-                    await announceUserActivity('logout');
-                    const userRef = window.firebase.ref(database, `onlineUsers/${userId}`);
-                    await window.firebase.remove(userRef);
                 }
             });
         }
