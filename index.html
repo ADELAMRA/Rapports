@@ -569,7 +569,7 @@
             color: white;
             background: var(--gradient-success);
             box-shadow: var(--shadow-xl);
-            z-index: 1000;
+            z-index: 9000;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -951,14 +951,8 @@
         }
 
         @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .confirmation-content h3 {
@@ -1034,154 +1028,337 @@
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
         }
 
+        /* =============== لوحة الإحصائيات =============== */
+        .stats-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 7000;
+        }
+        .stats-overlay.show { display: block; }
+
+        .stats-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 420px;
+            max-width: 96vw;
+            height: 100vh;
+            background: #f8fafc;
+            z-index: 7100;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 6px 0 30px rgba(0,0,0,0.18);
+        }
+        .stats-panel.open { transform: translateX(0); }
+
+        .stats-panel-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .stats-panel-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stats-panel-close {
+            background: rgba(255,255,255,0.18);
+            border: none;
+            color: white;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            font-family: 'Cairo', sans-serif;
+        }
+        .stats-panel-close:hover {
+            background: rgba(255,255,255,0.32);
+            transform: rotate(90deg);
+        }
+
+        .stats-panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px;
+        }
+        .stats-panel-body::-webkit-scrollbar { width: 5px; }
+        .stats-panel-body::-webkit-scrollbar-track { background: #e2e8f0; }
+        .stats-panel-body::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 10px; }
+
+        /* بطاقات الملخص */
+        .sp-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .sp-sum-card {
+            background: white;
+            border: 1px solid var(--light-border);
+            border-radius: var(--border-radius-sm);
+            padding: 14px 10px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .sp-sum-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .sp-sum-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 6px;
+            font-size: 15px;
+        }
+        .sp-sum-val { font-size: 22px; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+        .sp-sum-lbl { font-size: 11px; color: var(--gray-dark); font-weight: 600; margin-top: 4px; }
+
+        /* فلتر شهر */
+        .sp-filter {
+            margin-bottom: 16px;
+        }
+        .sp-filter label { font-size: 12px; font-weight: 700; color: var(--dark-color); display: block; margin-bottom: 5px; }
+        .sp-filter select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1.5px solid var(--light-border);
+            border-radius: var(--border-radius-sm);
+            font-size: 12px;
+            font-family: 'Cairo', sans-serif;
+            background: white;
+            color: var(--dark-color);
+            cursor: pointer;
+        }
+        .sp-filter select:focus { border-color: var(--primary-color); outline: none; }
+
+        /* بطاقات المتفقدين */
+        .sp-cards { display: flex; flex-direction: column; gap: 12px; }
+
+        .sp-inspector-card {
+            background: white;
+            border: 1px solid var(--light-border);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .sp-inspector-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+        .sp-card-header {
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .sp-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800;
+            color: white; flex-shrink: 0;
+        }
+        .sp-card-info { flex: 1; }
+        .sp-card-name { font-size: 13px; font-weight: 700; color: var(--dark-color); }
+        .sp-card-sub { font-size: 11px; color: var(--gray-dark); margin-top: 1px; }
+        .sp-card-badge {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .sp-rank {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 800; color: white;
+            flex-shrink: 0;
+        }
+        .sp-toggle { color: var(--gray-dark); font-size: 12px; transition: var(--transition); }
+        .sp-inspector-card.expanded .sp-toggle { transform: rotate(180deg); }
+
+        .sp-card-body {
+            display: none;
+            padding: 0 14px 14px;
+            border-top: 1px solid var(--light-border);
+        }
+        .sp-inspector-card.expanded .sp-card-body { display: block; }
+
+        .sp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .sp-grid-item {
+            background: var(--gray-light);
+            border-radius: var(--border-radius-sm);
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--light-border);
+        }
+        .sp-grid-val { font-size: 18px; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+        .sp-grid-lbl { font-size: 10px; color: var(--gray-dark); margin-top: 3px; font-weight: 600; }
+
+        .sp-progress { margin-top: 12px; }
+        .sp-progress-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-dark); margin-bottom: 4px; font-weight: 600; }
+        .sp-bar { height: 7px; background: var(--light-border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+        .sp-bar-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
+
+        .sp-topics { margin-top: 12px; }
+        .sp-topics h4 { font-size: 11px; font-weight: 700; color: var(--dark-color); margin-bottom: 7px; }
+        .sp-topic-item { margin-bottom: 6px; }
+        .sp-topic-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--gray-dark); margin-bottom: 2px; font-weight: 600; }
+        .sp-topic-row span:last-child { color: var(--primary-color); font-weight: 700; }
+        .sp-topic-bar { height: 4px; background: var(--light-border); border-radius: 4px; overflow: hidden; }
+        .sp-topic-fill { height: 100%; background: var(--gradient-primary); border-radius: 4px; transition: width 0.5s ease; }
+
+        .sp-last-visit {
+            margin-top: 10px;
+            background: rgba(37, 99, 235, 0.05);
+            border-right: 3px solid var(--primary-color);
+            padding: 8px 10px;
+            border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+            font-size: 11px;
+            color: var(--dark-color);
+        }
+        .sp-last-visit strong { color: var(--primary-color); }
+
+        .sp-no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-dark);
+        }
+        .sp-no-data i { font-size: 38px; opacity: 0.35; margin-bottom: 10px; display: block; }
+        .sp-no-data p { font-size: 13px; font-weight: 600; }
+
+        /* ألوان الأفاتار */
+        .avc-0 { background: linear-gradient(135deg,#2563eb,#3b82f6); }
+        .avc-1 { background: linear-gradient(135deg,#10b981,#34d399); }
+        .avc-2 { background: linear-gradient(135deg,#f59e0b,#fbbf24); }
+        .avc-3 { background: linear-gradient(135deg,#8b5cf6,#a78bfa); }
+        .avc-4 { background: linear-gradient(135deg,#ef4444,#f87171); }
+        .avc-5 { background: linear-gradient(135deg,#06b6d4,#22d3ee); }
+        .avc-6 { background: linear-gradient(135deg,#ec4899,#f472b6); }
+        .avc-7 { background: linear-gradient(135deg,#f97316,#fb923c); }
+        .avc-8 { background: linear-gradient(135deg,#64748b,#94a3b8); }
+        .avc-9 { background: linear-gradient(135deg,#7c3aed,#2563eb); }
+
+        /* زر الإحصائيات في الهيدر */
+        .btn-stats-header {
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,255,0.18);
+            border: 1.5px solid rgba(255,255,255,0.45);
+            color: white;
+            padding: 9px 15px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 7px;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition);
+            white-space: nowrap;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+        .btn-stats-header:hover {
+            background: rgba(255,255,255,0.30);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        .btn-stats-header .hbadge {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px; height: 20px;
+            font-size: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800;
+        }
+
+        /* قاع اللوحة */
+        .stats-panel-footer {
+            padding: 14px 18px;
+            border-top: 1px solid var(--light-border);
+            background: white;
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .spf-btn {
+            flex: 1;
+            padding: 9px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition);
+        }
+        .spf-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .spf-btn-primary { background: var(--gradient-primary); color: white; }
+        .spf-btn-success { background: var(--gradient-success); color: white; }
+
         /* تحسينات للهواتف */
         @media (max-width: 768px) {
-            body {
-                padding: 8px;
-                font-size: 13px;
-            }
-
-            header {
-                padding: 12px 15px;
-                flex-direction: column;
-                text-align: center;
-                gap: 8px;
-            }
-
-            .logo-container {
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .logo {
-                width: 45px;
-                height: 45px;
-                font-size: 20px;
-            }
-
-            header h1 {
-                font-size: 16px;
-            }
-
-            .app-content {
-                padding: 12px;
-                gap: 15px;
-            }
-
-            .form-section {
-                padding: 15px;
-            }
-
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-
-            .stat-card {
-                padding: 12px;
-            }
-
-            .stat-number {
-                font-size: 20px;
-            }
-
-            .filter-section {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .filter-group {
-                min-width: 100%;
-            }
-
-            .user-info {
-                flex-direction: column;
-                gap: 10px;
-                align-items: flex-start;
-            }
-
-            .firebase-status {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-
-            .firebase-controls {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .sync-status {
-                bottom: 15px;
-                right: 15px;
-                padding: 10px 15px;
-                font-size: 12px;
-            }
-
-            .notification {
-                max-width: 280px;
-                padding: 10px 14px;
-                font-size: 12px;
-            }
-
-            .confirmation-content {
-                width: 90%;
-                padding: 20px;
-            }
+            body { padding: 8px; font-size: 13px; }
+            header { padding: 12px 15px; flex-direction: column; text-align: center; gap: 8px; }
+            .logo-container { flex-direction: column; gap: 8px; }
+            .logo { width: 45px; height: 45px; font-size: 20px; }
+            header h1 { font-size: 16px; }
+            .app-content { padding: 12px; gap: 15px; }
+            .form-section { padding: 15px; }
+            .stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 12px; }
+            .stat-number { font-size: 20px; }
+            .filter-section { flex-direction: column; gap: 10px; }
+            .filter-group { min-width: 100%; }
+            .user-info { flex-direction: column; gap: 10px; align-items: flex-start; }
+            .firebase-status { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .firebase-controls { width: 100%; justify-content: space-between; }
+            .sync-status { bottom: 15px; right: 15px; padding: 10px 15px; font-size: 12px; }
+            .notification { max-width: 280px; padding: 10px 14px; font-size: 12px; }
+            .confirmation-content { width: 90%; padding: 20px; }
+            .stats-panel { width: 96vw; }
+            .btn-stats-header { padding: 7px 12px; font-size: 12px; }
         }
 
         @media (max-width: 480px) {
-            .visit-topic-options {
-                gap: 6px;
-            }
-            
-            .topic-option {
-                padding: 5px 10px;
-                font-size: 11px;
-            }
-            
-            .btn {
-                padding: 8px 12px;
-                font-size: 12px;
-            }
-            
-            .action-cell {
-                flex-direction: column;
-                gap: 4px;
-            }
-            
-            .action-btn {
-                padding: 4px 6px;
-                font-size: 10px;
-            }
+            .visit-topic-options { gap: 6px; }
+            .topic-option { padding: 5px 10px; font-size: 11px; }
+            .btn { padding: 8px 12px; font-size: 12px; }
+            .action-cell { flex-direction: column; gap: 4px; }
+            .action-btn { padding: 4px 6px; font-size: 10px; }
         }
 
         @media (min-width: 992px) {
-            .container {
-                margin: 15px auto;
-                max-width: 1300px;
-            }
-            
-            .app-content {
-                flex-direction: row;
-                padding: 20px;
-            }
-            
-            .form-section {
-                flex: 1;
-            }
-            
-            .table-section {
-                flex: 2;
-            }
-            
-            .form-row {
-                flex-direction: row;
-            }
-            
-            .actions {
-                flex-direction: row;
-            }
+            .container { margin: 15px auto; max-width: 1300px; }
+            .app-content { flex-direction: row; padding: 20px; }
+            .form-section { flex: 1; }
+            .table-section { flex: 2; }
+            .form-row { flex-direction: row; }
+            .actions { flex-direction: row; }
         }
     </style>
 </head>
@@ -1189,6 +1366,30 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
     </div>
+
+    <!-- ===== لوحة الإحصائيات ===== -->
+    <div class="stats-overlay" id="statsOverlay" onclick="closeStatsPanel()"></div>
+    <div class="stats-panel" id="statsPanel">
+        <div class="stats-panel-header">
+            <h2><i class="fas fa-chart-bar"></i> إحصائيات المتفقدين</h2>
+            <button class="stats-panel-close" onclick="closeStatsPanel()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="stats-panel-body" id="statsPanelBody">
+            <div class="sp-no-data">
+                <i class="fas fa-chart-pie"></i>
+                <p>يرجى تسجيل الدخول لعرض الإحصائيات</p>
+            </div>
+        </div>
+        <div class="stats-panel-footer">
+            <button class="spf-btn spf-btn-primary" onclick="renderStatsPanel()">
+                <i class="fas fa-sync-alt"></i> تحديث
+            </button>
+            <button class="spf-btn spf-btn-success" onclick="downloadExcel(); closeStatsPanel();">
+                <i class="fas fa-file-excel"></i> تصدير Excel
+            </button>
+        </div>
+    </div>
+    <!-- ========================== -->
     
     <div class="container">
         <header>
@@ -1201,6 +1402,12 @@
                     <p>المندوبية الإقليمية للشؤون الإسلامية - مكناس</p>
                 </div>
             </div>
+            <!-- زر الإحصائيات -->
+            <button class="btn-stats-header" id="btnStatsHeader" onclick="openStatsPanel()">
+                <i class="fas fa-chart-bar"></i>
+                الإحصائيات
+                <span class="hbadge" id="statsBadge">0</span>
+            </button>
         </header>
 
         <div id="loginSection" class="login-section">
@@ -1427,7 +1634,7 @@
                     </div>
                     
                     <div class="visit-topic-options" id="visit-topic-options">
-                                               <div class="topic-option" data-value=" تتبع أحوال المساجد ">تتبع أحوال المساجد</div>                
+                        <div class="topic-option" data-value=" تتبع أحوال المساجد ">تتبع أحوال المساجد</div>                
                         <div class="topic-option" data-value=" تتبع سير الشعائر الدينية ">تتبع سير الشعائر الدينية</div>
                         <div class="topic-option" data-value="تتبع مواظبة القيمين الدينيين ">تتبع مواظبة القيمين الدينيين</div>
                         <div class="topic-option" data-value="تتبع قراءة الحزب الراتب ">تتبع قراءة الحزب الراتب</div>
@@ -1597,6 +1804,129 @@
     </div>
 
     <script>
+        // ======== كود الإحصائيات (إضافة جديدة) ========
+        function openStatsPanel() {
+            document.getElementById('statsOverlay').classList.add('show');
+            document.getElementById('statsPanel').classList.add('open');
+            renderStatsPanel();
+        }
+
+        function closeStatsPanel() {
+            document.getElementById('statsOverlay').classList.remove('show');
+            document.getElementById('statsPanel').classList.remove('open');
+        }
+
+        function updateStatsBadge() {
+            const badge = document.getElementById('statsBadge');
+            if (badge) {
+                const n = [...new Set(reports.map(r => r.inspector).filter(Boolean))].length;
+                badge.textContent = n;
+            }
+        }
+
+        function renderStatsPanel(filterMonth) {
+            const body = document.getElementById('statsPanelBody');
+            if (!body) return;
+            const src = filterMonth ? reports.filter(r => r.month === filterMonth) : reports;
+
+            if (src.length === 0) {
+                body.innerHTML = `<div class="sp-no-data"><i class="fas fa-inbox"></i><p>لا توجد تقارير${filterMonth ? ' لهذا الشهر' : ' بعد'}</p></div>`;
+                return;
+            }
+
+            const total = src.length;
+            const inspSet = [...new Set(src.map(r => r.inspector).filter(Boolean))];
+            const mosqSet = [...new Set(src.map(r => r.mosqueName).filter(Boolean))];
+            const done = src.filter(r => r.actions && r.actions.trim()).length;
+            const donePct = total ? Math.round(done / total * 100) : 0;
+
+            const map = {};
+            src.forEach(r => {
+                const n = r.inspector || 'غير محدد';
+                if (!map[n]) map[n] = { name: n, total: 0, done: 0, mosques: new Set(), topics: {}, months: {}, lastDate: null };
+                const d = map[n];
+                d.total++;
+                if (r.actions && r.actions.trim()) d.done++;
+                if (r.mosqueName) d.mosques.add(r.mosqueName);
+                if (r.month) d.months[r.month] = (d.months[r.month] || 0) + 1;
+                if (r.visitTopic) r.visitTopic.split('، ').forEach(t => { const tt = t.trim(); if (tt) d.topics[tt] = (d.topics[tt] || 0) + 1; });
+                if (r.visitDate && (!d.lastDate || r.visitDate > d.lastDate)) d.lastDate = r.visitDate;
+            });
+
+            const sorted = Object.values(map).sort((a, b) => b.total - a.total);
+            const rankColors = ['#f59e0b','#94a3b8','#b45309'];
+            const months = [...new Set(reports.map(r => r.month).filter(Boolean))];
+            const monthOpts = months.map(m => `<option value="${m}"${filterMonth===m?'selected':''}>${m}</option>`).join('');
+
+            let html = `
+            <div class="sp-summary">
+                <div class="sp-sum-card"><div class="sp-sum-icon" style="background:rgba(37,99,235,0.1);color:#2563eb;"><i class="fas fa-file-alt"></i></div><div class="sp-sum-val">${total}</div><div class="sp-sum-lbl">إجمالي التقارير</div></div>
+                <div class="sp-sum-card"><div class="sp-sum-icon" style="background:rgba(16,185,129,0.1);color:#10b981;"><i class="fas fa-users"></i></div><div class="sp-sum-val">${inspSet.length}</div><div class="sp-sum-lbl">عدد المتفقدين</div></div>
+                <div class="sp-sum-card"><div class="sp-sum-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b;"><i class="fas fa-mosque"></i></div><div class="sp-sum-val">${mosqSet.length}</div><div class="sp-sum-lbl">مساجد مزارة</div></div>
+                <div class="sp-sum-card"><div class="sp-sum-icon" style="background:rgba(239,68,68,0.1);color:#ef4444;"><i class="fas fa-check-circle"></i></div><div class="sp-sum-val">${donePct}%</div><div class="sp-sum-lbl">نسبة الإنجاز</div></div>
+            </div>
+            <div class="sp-filter">
+                <label><i class="fas fa-filter"></i> تصفية حسب الشهر</label>
+                <select onchange="renderStatsPanel(this.value)">
+                    <option value="">جميع الأشهر</option>
+                    ${monthOpts}
+                </select>
+            </div>
+            <div class="sp-cards">`;
+
+            sorted.forEach((d, i) => {
+                const cls = `avc-${i % 10}`;
+                const initials = d.name.split(' ').map(w => w[0]).slice(0, 2).join('');
+                const pct = d.total ? Math.round(d.done / d.total * 100) : 0;
+                const share = total ? Math.round(d.total / total * 100) : 0;
+                const topTopics = Object.entries(d.topics).sort((a,b) => b[1]-a[1]).slice(0,3);
+                const maxT = topTopics[0] ? topTopics[0][1] : 1;
+                const topMonth = Object.entries(d.months).sort((a,b) => b[1]-a[1])[0];
+                const rc = i < 3 ? rankColors[i] : '#cbd5e1';
+
+                html += `
+                <div class="sp-inspector-card" id="spc-${i}">
+                    <div class="sp-card-header" onclick="toggleSpc(${i})">
+                        <div class="sp-avatar ${cls}">${initials}</div>
+                        <div class="sp-card-info">
+                            <div class="sp-card-name">${d.name}</div>
+                            <div class="sp-card-sub">${d.mosques.size} مسجد · ${pct}% إنجاز</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div class="sp-rank" style="background:${rc}">${i+1}</div>
+                            <div class="sp-card-badge">${d.total}</div>
+                            <i class="fas fa-chevron-down sp-toggle"></i>
+                        </div>
+                    </div>
+                    <div class="sp-card-body">
+                        <div class="sp-grid">
+                            <div class="sp-grid-item"><div class="sp-grid-val">${d.total}</div><div class="sp-grid-lbl">إجمالي التقارير</div></div>
+                            <div class="sp-grid-item"><div class="sp-grid-val">${d.done}</div><div class="sp-grid-lbl">إجراءات مكتملة</div></div>
+                            <div class="sp-grid-item"><div class="sp-grid-val">${d.mosques.size}</div><div class="sp-grid-lbl">مساجد مزارة</div></div>
+                            <div class="sp-grid-item"><div class="sp-grid-val">${share}%</div><div class="sp-grid-lbl">من الإجمالي</div></div>
+                        </div>
+                        <div class="sp-progress">
+                            <div class="sp-progress-row"><span>نسبة الإنجاز</span><span>${pct}%</span></div>
+                            <div class="sp-bar"><div class="sp-bar-fill" style="width:${pct}%;background:linear-gradient(135deg,#10b981,#34d399)"></div></div>
+                            <div class="sp-progress-row"><span>الحصة من الإجمالي</span><span>${share}%</span></div>
+                            <div class="sp-bar"><div class="sp-bar-fill" style="width:${share}%;background:linear-gradient(135deg,#2563eb,#3b82f6)"></div></div>
+                        </div>
+                        ${topTopics.length ? `<div class="sp-topics"><h4><i class="fas fa-tags"></i> أبرز مواضيع الزيارة</h4>${topTopics.map(([t,c]) => `<div class="sp-topic-item"><div class="sp-topic-row"><span>${t.trim()}</span><span>${c}</span></div><div class="sp-topic-bar"><div class="sp-topic-fill" style="width:${Math.round(c/maxT*100)}%"></div></div></div>`).join('')}</div>` : ''}
+                        ${d.lastDate ? `<div class="sp-last-visit"><strong><i class="fas fa-calendar-check"></i> آخر زيارة:</strong> ${d.lastDate}${topMonth ? ` &nbsp;·&nbsp; <strong>أنشط شهر:</strong> ${topMonth[0]} (${topMonth[1]})` : ''}</div>` : ''}
+                    </div>
+                </div>`;
+            });
+
+            html += `</div>`;
+            body.innerHTML = html;
+        }
+
+        function toggleSpc(i) {
+            const c = document.getElementById(`spc-${i}`);
+            if (c) c.classList.toggle('expanded');
+        }
+        // ======== نهاية كود الإحصائيات ========
+
         let reports = [];
         let currentUser = null;
         let userRole = null;
@@ -1819,6 +2149,7 @@
             
             loadReports();
             updateStats();
+            updateStatsBadge();
             
             if (reports.length > previousCount) {
                 const newCount = reports.length - previousCount;
@@ -1856,7 +2187,6 @@
                     <option value="اليوسفي ياسين">اليوسفي ياسين</option>
                     <option value="بلعيد عبد الجبار">بلعيد عبد الجبار</option>
                     <option value="مسغري فريد">مسغري فريد</option>
-
                 `;
                 if (adminInfo) adminInfo.style.display = 'none';
             }
@@ -1939,6 +2269,7 @@
                 userId = null;
                 sessionStorage.clear();
                 
+                closeStatsPanel();
                 showLoginSection();
                 showNotification('تم تسجيل الخروج بنجاح');
             });
@@ -1980,6 +2311,10 @@
                     el.classList.remove('admin-visible');
                 }
             });
+
+            // إظهار زر الإحصائيات
+            const btnS = document.getElementById('btnStatsHeader');
+            if (btnS) btnS.style.display = 'flex';
             
             const currentFilterInfo = document.getElementById('currentFilterInfo');
             const filterText = document.getElementById('filterText');
@@ -1996,6 +2331,7 @@
             
             loadReports();
             updateStats();
+            updateStatsBadge();
         }
         
         function showLoginSection() {
@@ -2006,6 +2342,9 @@
             if (appContent) appContent.style.display = 'none';
             if (footer) footer.style.display = 'none';
             
+            const btnS = document.getElementById('btnStatsHeader');
+            if (btnS) btnS.style.display = 'none';
+
             const usernameEl = document.getElementById('username');
             const passwordEl = document.getElementById('password');
             if (usernameEl) usernameEl.value = '';
@@ -2101,6 +2440,7 @@
                     localStorage.setItem('mosqueReports', JSON.stringify(reports));
                     loadReports();
                     updateStats();
+                    updateStatsBadge();
                     showNotification('تم إضافة التقرير محلياً (Firebase غير متاح)', false);
                 }
                 
@@ -2280,6 +2620,7 @@
                     localStorage.setItem('mosqueReports', JSON.stringify(reports));
                     loadReports();
                     updateStats();
+                    updateStatsBadge();
                 }
                 
                 if (showNotif) {
@@ -2549,6 +2890,7 @@
                     localStorage.setItem('mosqueReports', JSON.stringify([]));
                     loadReports();
                     updateStats();
+                    updateStatsBadge();
                     showNotification('تم مسح جميع البيانات المحلية', false);
                 }
                 
@@ -2570,6 +2912,7 @@
                 reports = JSON.parse(localStorage.getItem('mosqueReports') || '[]');
                 loadReports();
                 updateStats();
+                updateStatsBadge();
                 showNotification('تم تحديث البيانات المحلية');
             }
             
@@ -2650,6 +2993,11 @@
                     e.preventDefault();
                     e.returnValue = 'لديك تغييرات غير محفوظة. هل تريد المغادرة؟';
                 }
+            });
+
+            // إغلاق اللوحة بـ ESC
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') closeStatsPanel();
             });
         }
     </script>
