@@ -777,7 +777,7 @@
     </div>
 </div>
 
-<footer>متفقدي مساجد مكناس 2025© - جميع الحقوق محفوظة | المندوبية الإقليمية للشؤون الإسلامية - مكناس</footer>
+<footer>متفقدي مساجد مكناس 2026© - جميع الحقوق محفوظة | المندوبية الإقليمية للشؤون الإسلامية - مكناس</footer>
 
 <script>
 // ======== VARIABLES ========
@@ -1161,7 +1161,7 @@ function renderDashboard() {
     } else {
         filterBar.style.display = 'none';
         document.getElementById('topicsSectionTitle').innerHTML = `<i class="fas fa-tags"></i> إحصائيات حسب موضوع الزيارة${dashMonthFilter ? ' - ' + dashMonthFilter : ' (جميع المتفقدين)'}`;
-        document.getElementById('dashWelcomeSub').textContent = dashMonthFilter ? `الإحصائيات العامة - شهر ${dashMonthFilter}` : 'لوحة الإحصائيات والتحليلات العامة';
+        document.getElementById('dashWelcomeSub').textContent = dashMonthFilter ? `الإحصائيات العامة - شهر ${dashMonthFilter}` : 'بوابة التقارير والإحصائيات العامة';
     }
     updateMenuBadges();
 }
@@ -1508,42 +1508,44 @@ function printReport(id) {
     const r = reports.find(x => x.id === id);
     if (!r) { showNotification('التقرير غير موجود', true); return; }
 
-    const ALL_TOPICS = [
-        { label: 'تتبع أحوال المساجد' },
-        { label: 'تتبع سير الشعائر الدينية' },
-        { label: 'تتبع مواظبة القيمين الدينيين' },
-        { label: 'تتبع أحوال المساجد ومواظبة القيمين الدينيين' },
-        { label: 'تتبع قراءة الحزب الراتب' },
-        { label: 'تثبيت القيمين الدينيين المؤهلين في اطار المساطر المعمول بها' },
-        { label: 'تتبع خطة تسديد التبليغ' },
-        { label: 'عقد جلسات الصلح بين القيمين الدينيين والجماعة' },
-        { label: 'تتبع المساجد التي في طور البناء' },
-        { label: 'أخرى', custom: true }
+    // قائمة المواضيع الرسمية مرتبة: [يمين، يسار]
+    const TOPIC_PAIRS = [
+        ['تتبع أحوال المساجد',                                               'تتبع سير الشعائر الدينية'],
+        ['تتبع مواظبة القيمين الدينيين',                                     'تتبع أحوال المساجد ومواظبة القيمين الدينيين'],
+        ['تتبع قراءة الحزب الراتب',                                          'تثبيت القيمين الدينيين المؤهلين في اطار المساطر المعمول بها'],
+        ['تتبع خطة تسديد التبليغ',                                           'عقد جلسات الصلح بين القيمين الدينيين والجماعة'],
+        ['تتبع المساجد التي في طور البناء',                                  '__custom__'],
     ];
 
-    const selectedTopicsList = r.visitTopic ? r.visitTopic.split('، ').map(t => t.trim()) : [];
-    const customTopics = selectedTopicsList.filter(s => !ALL_TOPICS.slice(0,-1).some(t => s.includes(t.label.substring(0,10))));
+    const selectedTopicsList = r.visitTopic ? r.visitTopic.split('، ').map(t => t.trim()).filter(Boolean) : [];
 
-    // صفوف المواضيع (عمودان: يمين + يسار)
-    const pairs = [];
-    for (let i = 0; i < ALL_TOPICS.length; i += 2) pairs.push([ALL_TOPICS[i], ALL_TOPICS[i+1]]);
+    // دالة للتحقق من تطابق الموضوع (مقارنة كاملة وليس جزئية)
+    const isChecked = (label) => selectedTopicsList.some(s => s === label || s.includes(label) || label.includes(s));
 
-    const topicsHtml = pairs.map(([right, left]) => {
-        const rChecked = right && selectedTopicsList.some(s => s.includes(right.label.substring(0,10)));
-        const lChecked = left && !left.custom && selectedTopicsList.some(s => s.includes(left.label.substring(0,10)));
-        const lCustomChecked = left && left.custom && customTopics.length > 0;
-        const chkStyle = 'width:13px;height:13px;border:1.5px solid #000;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;';
+    // مواضيع مخصصة (غير موجودة في القائمة الرسمية)
+    const officialLabels = TOPIC_PAIRS.flat().filter(x => x !== '__custom__');
+    const customTopics = selectedTopicsList.filter(s => !officialLabels.some(ol => s === ol || s.includes(ol) || ol.includes(s)));
+
+    const chkStyle = 'width:13px;height:13px;border:1.5px solid #000;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;';
+
+    const topicsHtml = TOPIC_PAIRS.map(([right, left]) => {
+        const rChecked = isChecked(right);
+        const isCustom = left === '__custom__';
+        const lChecked = isCustom ? customTopics.length > 0 : isChecked(left);
+        const leftLabel = isCustom
+            ? `أخرى مع تحديدها : ${customTopics.length > 0 ? customTopics.join('، ') : '................................'}`
+            : left;
         return `<tr>
             <td style="padding:5px 8px;border:1px solid #ccc;font-size:10.5px;width:50%;">
                 <div style="display:flex;align-items:flex-start;gap:6px;">
-                    <div style="${chkStyle}">${lCustomChecked ? '✓' : ''}</div>
-                    <span>${left ? (left.custom ? `أخرى مع تحديدها : ${customTopics.length > 0 ? customTopics.join('، ') : '...........................'}` : left.label) : ''}</span>
+                    <div style="${chkStyle}">${lChecked ? '✓' : ''}</div>
+                    <span>${leftLabel}</span>
                 </div>
             </td>
             <td style="padding:5px 8px;border:1px solid #ccc;font-size:10.5px;width:50%;">
                 <div style="display:flex;align-items:flex-start;gap:6px;">
                     <div style="${chkStyle}">${rChecked ? '✓' : ''}</div>
-                    <span>${right ? right.label : ''}</span>
+                    <span>${right}</span>
                 </div>
             </td>
         </tr>`;
