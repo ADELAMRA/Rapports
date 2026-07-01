@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تقارير الزيارات التفقدية للمساجد - المندوبية الإقليمية للشؤون الإسلامية مكناس</title>
+    <title>بوابة تقارير الزيارات التفقدية للمساجد - المندوبية الإقليمية للشؤون الإسلامية مكناس</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="module">
@@ -528,6 +528,10 @@
         <div class="fb-controls">
             <button class="fb-btn" onclick="testFirebaseConnection()"><i class="fas fa-wifi"></i> اختبار الاتصال</button>
             <button class="fb-btn" onclick="showOnlineUsers()"><i class="fas fa-users"></i> المتصلين</button>
+                <button class="fb-btn" id="headerNotifBtn" onclick="navigateTo('notifications')" style="position:relative;">
+                    <i class="fas fa-bell"></i> الإشعارات
+                    <span id="headerNotifBadge" style="display:none;position:absolute;top:-6px;left:-6px;background:#ef4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;border:2px solid white;"></span>
+                </button>
         </div>
     </div>
     <div class="dashboard-page">
@@ -539,17 +543,43 @@
             <div class="dash-welcome-icon"><i class="fas fa-mosque"></i></div>
         </div>
         <div class="dash-controls">
-            <div class="dash-month-filter">
-                <label><i class="fas fa-calendar-alt" style="color:var(--primary);margin-left:4px;"></i> الشهر:</label>
-                <select id="dashMonthFilter" onchange="onDashMonthChange()">
-                    <option value="">جميع الأشهر</option>
-                    <option value="يناير">يناير</option><option value="فبراير">فبراير</option>
-                    <option value="مارس">مارس</option><option value="أبريل">أبريل</option>
-                    <option value="مايو">ماي</option><option value="يونيو">يونيو</option>
-                    <option value="يوليو">يوليوز</option><option value="أغسطس">غشت</option>
-                    <option value="سبتمبر">شتنبر</option><option value="أكتوبر">أكتوبر</option>
-                    <option value="نوفمبر">نونبر</option><option value="ديسمبر">دجنبر</option>
-                </select>
+            <div class="dash-month-filter" style="flex-direction:column;align-items:flex-start;gap:6px;padding:10px 14px;position:relative;">
+                <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;">
+                    <label style="font-size:12px;font-weight:700;color:var(--text-sub);white-space:nowrap;">
+                        <i class="fas fa-calendar-alt" style="color:var(--primary);margin-left:4px;"></i> تصفية حسب الأشهر:
+                    </label>
+                    <div style="display:flex;gap:6px;">
+                        <button onclick="selectAllMonths()" style="background:var(--grad-primary);color:white;border:none;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">الكل</button>
+                        <button onclick="clearAllMonths()" style="background:var(--grad-danger);color:white;border:none;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">مسح</button>
+                    </div>
+                </div>
+                <!-- زر فتح القائمة المنسدلة -->
+                <div style="width:100%;position:relative;">
+                    <button id="monthsDropdownBtn" onclick="toggleMonthsDropdown()" style="
+                        width:100%;display:flex;align-items:center;justify-content:space-between;
+                        padding:8px 12px;border:1.5px solid var(--light-border);border-radius:var(--radius-sm);
+                        background:var(--input-bg);color:var(--text-main);font-family:'Cairo',sans-serif;
+                        font-size:12px;font-weight:600;cursor:pointer;transition:var(--tr);">
+                        <span id="monthsDropdownLabel">جميع الأشهر</span>
+                        <i class="fas fa-chevron-down" id="monthsChevron" style="font-size:11px;transition:transform .3s;color:var(--primary);"></i>
+                    </button>
+                    <!-- القائمة المنسدلة -->
+                    <div id="monthsDropdown" style="
+                        display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;
+                        background:var(--card-bg);border:1.5px solid var(--light-border);
+                        border-radius:var(--radius-sm);box-shadow:var(--sh-lg);z-index:400;
+                        overflow:hidden;">
+                        <div style="padding:8px;border-bottom:1px solid var(--light-border);display:flex;gap:6px;background:var(--gray-light);">
+                            <button onclick="selectAllMonths()" style="flex:1;background:var(--grad-primary);color:white;border:none;padding:5px 8px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">
+                                <i class="fas fa-check-double"></i> تحديد الكل
+                            </button>
+                            <button onclick="clearAllMonths()" style="flex:1;background:var(--grad-danger);color:white;border:none;padding:5px 8px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">
+                                <i class="fas fa-times"></i> إلغاء الكل
+                            </button>
+                        </div>
+                        <div id="monthsCheckboxes" style="padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-height:220px;overflow-y:auto;"></div>
+                    </div>
+                </div>
             </div>
             <div id="dashFilterBar" class="dash-filter-bar" style="display:none;">
                 <span class="filter-label" id="dashFilterLabel"></span>
@@ -777,13 +807,13 @@
     </div>
 </div>
 
-<footer>متفقدي مساجد مكناس 2026© - جميع الحقوق محفوظة | المندوبية الإقليمية للشؤون الإسلامية - مكناس</footer>
+<footer>متفقدي مساجد مكناس 2026© - جميع الحقوق محفوظة | by ELECSMART - مكناس</footer>
 
 <script>
 // ======== VARIABLES ========
 let reports = [], currentUser = null, userRole = null, userType = 'inspector';
 let currentFilter = '', autoFilterEnabled = true, formChanged = false;
-let dashboardFilter = '', dashMonthFilter = '';
+let dashboardFilter = '', dashMonthFilter = '', selectedMonths = [];
 let firebaseReady = false, selectedTopics = [];
 let database = null, auth = null, reportsRef = null, notificationsRef = null, userId = null;
 let isDarkMode = false;
@@ -857,6 +887,20 @@ function updateMenuBadges() {
     if (nb) nb.textContent = unreadCount;
     const nd = document.getElementById('notifDot');
     if (nd) nd.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+
+    // زر الإشعارات في شريط Firebase
+    const hbadge = document.getElementById('headerNotifBadge');
+    const hbtn = document.getElementById('headerNotifBtn');
+    if (hbadge && hbtn) {
+        if (unreadCount > 0) {
+            hbadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+            hbadge.style.display = 'flex';
+            hbtn.style.background = 'linear-gradient(135deg,#7c3aed,#a78bfa)';
+        } else {
+            hbadge.style.display = 'none';
+            hbtn.style.background = '';
+        }
+    }
 }
 
 // ======== POPUP إشعارات فور تسجيل الدخول ========
@@ -1108,7 +1152,7 @@ function renderAbsentInspectors() {
     const grid = document.getElementById('absentGrid');
     const title = document.getElementById('absentSectionTitle');
     if (!grid || !title) return;
-    const src = dashMonthFilter ? reports.filter(r => r.month === dashMonthFilter) : reports;
+    const src = selectedMonths.length > 0 ? reports.filter(r => selectedMonths.includes(r.month)) : reports;
     const activeInspectors = new Set(src.map(r => r.inspector).filter(Boolean));
     // استبعاد المدير من قائمة المتفقدين العاديين
     const inspectorsList = ALL_INSPECTORS.filter(n => n !== 'العمراوي نورالدين');
@@ -1135,14 +1179,106 @@ function renderAbsentInspectors() {
 }
 
 // ======== DASHBOARD ========
+// ======== فلتر الأشهر المتعددة - قائمة منسدلة ========
+const MONTHS_LIST = [
+    {val:'يناير',lbl:'يناير'},{val:'فبراير',lbl:'فبراير'},{val:'مارس',lbl:'مارس'},
+    {val:'أبريل',lbl:'أبريل'},{val:'مايو',lbl:'ماي'},{val:'يونيو',lbl:'يونيو'},
+    {val:'يوليو',lbl:'يوليوز'},{val:'أغسطس',lbl:'غشت'},{val:'سبتمبر',lbl:'شتنبر'},
+    {val:'أكتوبر',lbl:'أكتوبر'},{val:'نوفمبر',lbl:'نونبر'},{val:'ديسمبر',lbl:'دجنبر'}
+];
+
+let monthsDropdownOpen = false;
+
+function toggleMonthsDropdown() {
+    monthsDropdownOpen = !monthsDropdownOpen;
+    const drop = document.getElementById('monthsDropdown');
+    const chev = document.getElementById('monthsChevron');
+    const btn  = document.getElementById('monthsDropdownBtn');
+    if (drop) drop.style.display = monthsDropdownOpen ? 'block' : 'none';
+    if (chev) chev.style.transform = monthsDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    if (btn)  btn.style.borderColor = monthsDropdownOpen ? 'var(--primary)' : 'var(--light-border)';
+}
+
+function closeMonthsDropdown() {
+    monthsDropdownOpen = false;
+    const drop = document.getElementById('monthsDropdown');
+    const chev = document.getElementById('monthsChevron');
+    const btn  = document.getElementById('monthsDropdownBtn');
+    if (drop) drop.style.display = 'none';
+    if (chev) chev.style.transform = 'rotate(0deg)';
+    if (btn)  btn.style.borderColor = 'var(--light-border)';
+}
+
+function buildMonthsCheckboxes() {
+    const wrap = document.getElementById('monthsCheckboxes');
+    if (!wrap) return;
+    wrap.innerHTML = MONTHS_LIST.map(m => `
+        <label id="mlbl-${m.val}" onclick="toggleMonth('${m.val}')" style="
+            display:flex;align-items:center;gap:7px;padding:7px 10px;
+            border-radius:var(--radius-sm);font-size:12px;font-weight:600;
+            cursor:pointer;transition:background .2s;color:var(--text-main);
+            user-select:none;">
+            <span id="mchk-${m.val}" style="
+                width:16px;height:16px;border:2px solid var(--gray-medium);
+                border-radius:4px;display:inline-flex;align-items:center;
+                justify-content:center;font-size:10px;font-weight:800;
+                flex-shrink:0;transition:all .2s;background:var(--input-bg);">
+            </span>
+            ${m.lbl}
+        </label>`).join('');
+}
+
+function toggleMonth(val) {
+    const idx = selectedMonths.indexOf(val);
+    if (idx > -1) selectedMonths.splice(idx, 1);
+    else selectedMonths.push(val);
+    updateMonthsUI();
+    renderDashboard();
+}
+
+function selectAllMonths() {
+    selectedMonths = MONTHS_LIST.map(m => m.val);
+    updateMonthsUI();
+    renderDashboard();
+}
+
+function clearAllMonths() {
+    selectedMonths = [];
+    updateMonthsUI();
+    renderDashboard();
+}
+
+function updateMonthsUI() {
+    MONTHS_LIST.forEach(m => {
+        const lbl = document.getElementById('mlbl-' + m.val);
+        const chk = document.getElementById('mchk-' + m.val);
+        const active = selectedMonths.includes(m.val);
+        if (lbl) lbl.style.background = active ? 'rgba(37,99,235,.1)' : 'transparent';
+        if (chk) {
+            chk.style.background   = active ? 'var(--primary)' : 'var(--input-bg)';
+            chk.style.borderColor  = active ? 'var(--primary)' : 'var(--gray-medium)';
+            chk.style.color        = active ? 'white' : 'transparent';
+            chk.innerHTML          = active ? '✓' : '';
+        }
+    });
+    // تحديث نص الزر
+    const dropLbl = document.getElementById('monthsDropdownLabel');
+    if (dropLbl) {
+        if (selectedMonths.length === 0)       dropLbl.textContent = 'جميع الأشهر';
+        else if (selectedMonths.length === 12) dropLbl.textContent = '✓ جميع الأشهر';
+        else dropLbl.textContent = selectedMonths.map(v => MONTHS_LIST.find(m=>m.val===v)?.lbl).join('، ');
+    }
+    dashMonthFilter = selectedMonths.length === 1 ? selectedMonths[0] : '';
+}
+
 function onDashMonthChange() {
-    dashMonthFilter = document.getElementById('dashMonthFilter').value;
+    dashMonthFilter = document.getElementById('dashMonthFilter')?.value || '';
     renderDashboard();
 }
 function getFilteredSource() {
     let src = reports;
     if (dashboardFilter) src = src.filter(r => r.inspector === dashboardFilter);
-    if (dashMonthFilter) src = src.filter(r => r.month === dashMonthFilter);
+    if (selectedMonths.length > 0) src = src.filter(r => selectedMonths.includes(r.month));
     return src;
 }
 function renderDashboard() {
@@ -1153,15 +1289,18 @@ function renderDashboard() {
     updateStats();
     const filterBar = document.getElementById('dashFilterBar');
     const filterLabel = document.getElementById('dashFilterLabel');
+    const monthsLabel = selectedMonths.length > 0 && selectedMonths.length < 12
+        ? ` · أشهر: ${selectedMonths.map(v => MONTHS_LIST.find(m=>m.val===v)?.lbl).join('، ')}`
+        : '';
     if (dashboardFilter) {
         filterBar.style.display = 'flex';
-        filterLabel.textContent = `إحصائيات المتفقد: ${dashboardFilter}${dashMonthFilter ? ' · شهر: ' + dashMonthFilter : ''}`;
-        document.getElementById('topicsSectionTitle').innerHTML = `<i class="fas fa-tags"></i> مواضيع الزيارة - ${dashboardFilter}`;
-        document.getElementById('dashWelcomeSub').textContent = `إحصائيات مخصصة للمتفقد ${dashboardFilter}${dashMonthFilter ? ' - ' + dashMonthFilter : ''}`;
+        filterLabel.textContent = `إحصائيات المتفقد: ${dashboardFilter}${monthsLabel}`;
+        document.getElementById('topicsSectionTitle').innerHTML = `<i class="fas fa-tags"></i> مواضيع الزيارة - ${dashboardFilter}${monthsLabel}`;
+        document.getElementById('dashWelcomeSub').textContent = `إحصائيات مخصصة للمتفقد ${dashboardFilter}${monthsLabel}`;
     } else {
         filterBar.style.display = 'none';
-        document.getElementById('topicsSectionTitle').innerHTML = `<i class="fas fa-tags"></i> إحصائيات حسب موضوع الزيارة${dashMonthFilter ? ' - ' + dashMonthFilter : ' (جميع المتفقدين)'}`;
-        document.getElementById('dashWelcomeSub').textContent = dashMonthFilter ? `الإحصائيات العامة - شهر ${dashMonthFilter}` : 'بوابة التقارير والإحصائيات العامة';
+        document.getElementById('topicsSectionTitle').innerHTML = `<i class="fas fa-tags"></i> إحصائيات حسب موضوع الزيارة${monthsLabel || ' (جميع المتفقدين)'}`;
+        document.getElementById('dashWelcomeSub').textContent = monthsLabel ? `الإحصائيات العامة${monthsLabel}` : 'لوحة الإحصائيات والتحليلات العامة';
     }
     updateMenuBadges();
 }
@@ -1169,7 +1308,7 @@ function renderDashboard() {
 function renderInspectorsGrid() {
     const grid = document.getElementById('inspectorsGrid');
     if (!grid) return;
-    let src = dashMonthFilter ? reports.filter(r => r.month === dashMonthFilter) : reports;
+    let src = selectedMonths.length > 0 ? reports.filter(r => selectedMonths.includes(r.month)) : reports;
     if (src.length === 0) { grid.innerHTML = '<p style="color:var(--text-sub);font-size:13px;">لا توجد بيانات بعد</p>'; return; }
     const map = {}; const total = src.length;
     src.forEach(r => {
@@ -1282,7 +1421,7 @@ function renderRepeatedMosques() {
 }
 
 function updateStats() {
-    const src = (dashboardFilter || dashMonthFilter) ? getFilteredSource()
+    const src = (dashboardFilter || selectedMonths.length > 0) ? getFilteredSource()
         : (userRole === 'inspector' ? reports.filter(r => r.inspector === currentUser) : reports);
     const el = id => document.getElementById(id);
     if (el('total-reports')) el('total-reports').textContent = src.length;
@@ -1429,6 +1568,8 @@ function showMainUI() {
     if(userRole==='inspector'){autoFilterEnabled=true;currentFilter=currentUser;}
     else{autoFilterEnabled=false;currentFilter='';}
     if(!firebaseReady) loadLocalNotifications();
+    buildMonthsCheckboxes();
+    updateMonthsUI();
     navigateTo('dashboard'); renderDashboard();
 }
 function hideMainUI() {
